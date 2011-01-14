@@ -6,7 +6,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+
+import com.typemapper.core.result.DbResultNode;
+import com.typemapper.core.result.ResultTree;
+import com.typemapper.core.result.SimpleResultNode;
 
 public class TypeMapper implements ParameterizedRowMapper {
 	
@@ -27,11 +32,8 @@ public class TypeMapper implements ParameterizedRowMapper {
 		Object result = null;
 		try {
 			result = getResultClass().newInstance();
-			
-			LOG.debug(set.toString());
-			String stringResult = set.getString(1);
-			LOG.debug(stringResult);
-			fillObject(result, set);
+			ResultTree resultTree = extractResultTree(set);
+			fillObject(result, resultTree);
 		} catch (InstantiationException e) {
 			throw new SQLException(getResultClass() + " has not public no arch constructor", e);
 		} catch (IllegalAccessException e) {
@@ -40,17 +42,39 @@ public class TypeMapper implements ParameterizedRowMapper {
 		return result;
 	}
 	
-	private void fillObject(Object result, ResultSet set) throws SQLException {
+	private ResultTree extractResultTree(ResultSet set) {
+		ResultTree tree = new ResultTree();
+		int i = 1;
+		while (true) {
+			String name = null;
+			Object obj = null;
+			DbResultNode node = null;
+			try {
+				obj = set.getObject(i);
+				name = set.getMetaData().getColumnName(i);
+			} catch (SQLException e) {
+				LOG.error("Exception while extracting result Tree", e);
+				break;
+			}
+			if (obj instanceof PGobject) {
+				
+			} else {
+				node = new SimpleResultNode(obj, name);
+			}
+			LOG.info("obj = " + obj);
+			tree.addChild(node);
+			i++;
+		}
+		return tree;
+	}
+
+	private void fillObject(Object result, ResultTree tree) throws SQLException {
 		for (Mapping mapping :getMappings()) {
 			try {
-				String fieldStringValue = set.getString(mapping.getName());
+				DbResultNode node = tree.getChildByName(mapping.getName());
+				String fieldStringValue = node.getValue();
 				Object value = mapping.getFieldMapper().mapField(fieldStringValue);
-				Method setter = mapping.getSetter(); 
-				if (setter != null) {
-					setter.invoke(result, value);
-				} else {
-					mapping.getField().set(result, value);
-				}
+				mapping.map(result, value);
 			} catch (Exception e) {
 				LOG.error(e, e);
 			}

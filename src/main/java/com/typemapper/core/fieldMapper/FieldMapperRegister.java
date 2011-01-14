@@ -19,6 +19,10 @@ public class FieldMapperRegister {
 		
 		FieldMapper charMapper = new CharFieldMapper();
 		FieldMapperRegister.register(char.class, charMapper);
+		
+		FieldMapper stringMapper = new StringFieldMapper();
+		FieldMapperRegister.register(String.class, stringMapper);
+		
 	}
 	
 	@SuppressWarnings("unchecked")
