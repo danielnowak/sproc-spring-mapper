@@ -7,16 +7,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 public class DbTypeRegister {
 	
 	private static DbTypeRegister register = null; 
 	
 	private Map<String, DbType> types = null;
-	
-	private static final Logger LOG = Logger.getLogger(DbTypeRegister.class);
-	
 	
 	public DbTypeRegister(Connection connection) throws SQLException {
 		

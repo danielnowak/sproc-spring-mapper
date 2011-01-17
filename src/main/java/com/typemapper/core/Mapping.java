@@ -42,7 +42,6 @@ public class Mapping {
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
 	Mapping(Field field, String name, boolean embed, final Field embedField) {
 		this.name = name;
 		this.field = field;
@@ -50,12 +49,11 @@ public class Mapping {
 		this.embedField = embedField;
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Class getFieldClass() {
 		return field.getType();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Method getSetter(Field field) {
 		final String setterName = "set" + capitalize( field.getName() );
 		try {
