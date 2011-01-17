@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class FieldMapperRegister {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes"})
 	private static final Map<Class, FieldMapper> register = new HashMap<Class, FieldMapper>();
 	
 	static {
@@ -25,12 +25,11 @@ public class FieldMapperRegister {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	static synchronized void register(Class clazz, FieldMapper mapper) {
 		register.put(clazz, mapper);
 	}
-	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public static FieldMapper getMapperForClass(Class clazz) {
 		return register.get(clazz);
 	}

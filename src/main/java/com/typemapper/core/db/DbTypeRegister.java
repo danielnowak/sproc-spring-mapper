@@ -21,7 +21,7 @@ public class DbTypeRegister {
 	public DbTypeRegister(Connection connection) throws SQLException {
 		
 		this.types = new HashMap<String, DbType>();
-		PreparedStatement statement = connection.prepareStatement("SELECT udt_schema, udt_name, attribute_name, ordinal_position, data_type FROM information_schema.attributes");
+		PreparedStatement statement = connection.prepareStatement("SELECT udt_schema, udt_name, attribute_name, ordinal_position, data_type, attribute_udt_name FROM information_schema.attributes");
 		ResultSet resultSet = statement.executeQuery();
 		while (resultSet.next()) {
 			int i = 1;
@@ -30,28 +30,29 @@ public class DbTypeRegister {
 			String fieldName = resultSet.getString(i++);
 			int fieldPosition = resultSet.getInt(i++);
 			String fieldType = resultSet.getString(i++);
-			addField(typeSchema, typeName, fieldName, fieldPosition, fieldType);
+			String fieldTypeName = resultSet.getString(i++);
+			addField(typeSchema, typeName, fieldName, fieldPosition, fieldType, fieldTypeName);
 			
 		}
 	}
 	
-	private void addField(String typeSchema, String typeName, String fieldName, int fieldPosition, String fieldType) {
+	private void addField(String typeSchema, String typeName, String fieldName, int fieldPosition, String fieldType, String fieldTypeName) {
 		final String typeId = getTypeIdentifier(typeName);
 		DbType type = types.get(typeId);
 		if (type == null) {
 			type = new DbType(typeSchema, typeName);
 			types.put(typeId, type);
 		}
-		type.addField(new DbTypeField(fieldName, fieldPosition, fieldType));
+		type.addField(new DbTypeField(fieldName, fieldPosition, fieldType, fieldTypeName));
 	}
 
 	private String getTypeIdentifier(String typeName) {
 		return typeName;
 	}
 
-	public static DbType getDbType(String name, Connection conection) throws SQLException {
+	public static DbType getDbType(String name, Connection connection) throws SQLException {
 		if (register == null) {
-			initRegister(conection);
+			initRegister(connection);
 		}
 		String id = register.getTypeIdentifier(name);
 		return register.types.get(id);

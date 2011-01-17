@@ -20,7 +20,7 @@ public class Mapping {
 	private boolean embed;
 	private Field embedField;
 	
-	static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") Class clazz) {
+	public static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") Class clazz) {
 		return getMappingsForClass(clazz, false, null);
 	}
 	
@@ -154,5 +154,11 @@ public class Mapping {
 			result = embedField.get(target);
 		}
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "Mapping [name=" + name + ", field=" + field + ", embed="
+				+ embed + ", embedField=" + embedField + "]";
 	}
 }

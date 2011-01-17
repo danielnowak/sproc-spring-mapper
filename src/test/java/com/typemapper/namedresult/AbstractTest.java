@@ -5,7 +5,9 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.junit.Before;
+import org.junit.Ignore;
 
+@Ignore
 public class AbstractTest {
 	
 	protected Connection connection;

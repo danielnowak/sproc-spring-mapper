@@ -1,27 +1,31 @@
 package com.typemapper.core;
 
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.postgresql.jdbc4.Jdbc4Array;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
+import com.typemapper.core.fieldMapper.ArrayFieldMapper;
+import com.typemapper.core.fieldMapper.ObjectFieldMapper;
+import com.typemapper.core.result.ArrayResultNode;
 import com.typemapper.core.result.DbResultNode;
+import com.typemapper.core.result.DbResultNodeType;
+import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
 
+@SuppressWarnings("rawtypes")
 public class TypeMapper implements ParameterizedRowMapper {
 	
 	private static final Logger LOG = Logger.getLogger(TypeMapper.class);
 	
-	@SuppressWarnings("unchecked")
 	private final Class resultClass;
 	private final List<Mapping> mappings;
 	
-	@SuppressWarnings("unchecked")
 	TypeMapper(Class resultClass) {
 		this.resultClass = resultClass;
 		mappings = Mapping.getMappingsForClass(this.resultClass);
@@ -31,6 +35,7 @@ public class TypeMapper implements ParameterizedRowMapper {
 	public Object mapRow(ResultSet set, int count) throws SQLException {
 		Object result = null;
 		try {
+			
 			result = getResultClass().newInstance();
 			ResultTree resultTree = extractResultTree(set);
 			fillObject(result, resultTree);
@@ -42,7 +47,7 @@ public class TypeMapper implements ParameterizedRowMapper {
 		return result;
 	}
 	
-	private ResultTree extractResultTree(ResultSet set) {
+	private ResultTree extractResultTree(ResultSet set) throws SQLException {
 		ResultTree tree = new ResultTree();
 		int i = 1;
 		while (true) {
@@ -50,6 +55,7 @@ public class TypeMapper implements ParameterizedRowMapper {
 			Object obj = null;
 			DbResultNode node = null;
 			try {
+				obj = set.getArray(i);
 				obj = set.getObject(i);
 				name = set.getMetaData().getColumnName(i);
 			} catch (SQLException e) {
@@ -57,7 +63,13 @@ public class TypeMapper implements ParameterizedRowMapper {
 				break;
 			}
 			if (obj instanceof PGobject) {
-				
+				PGobject pgObj = (PGobject) obj;
+				node = new ObjectResultNode(pgObj.getValue(), name, pgObj.getType(), set.getStatement().getConnection());
+			} else if (obj instanceof Jdbc4Array) {
+				Jdbc4Array arrayObj = (Jdbc4Array) obj;
+				String typeName = arrayObj.getBaseTypeName();
+				String value = arrayObj.toString();
+				node = new ArrayResultNode(name, value, typeName, set.getStatement().getConnection());
 			} else {
 				node = new SimpleResultNode(obj, name);
 			}
@@ -72,16 +84,25 @@ public class TypeMapper implements ParameterizedRowMapper {
 		for (Mapping mapping :getMappings()) {
 			try {
 				DbResultNode node = tree.getChildByName(mapping.getName());
-				String fieldStringValue = node.getValue();
-				Object value = mapping.getFieldMapper().mapField(fieldStringValue);
-				mapping.map(result, value);
+				if (DbResultNodeType.SIMPLE.equals(node.getNodeType())) {
+					String fieldStringValue = node.getValue();
+					Object value = mapping.getFieldMapper().mapField(fieldStringValue);
+					mapping.map(result, value);
+					
+				} else if (DbResultNodeType.OBJECT.equals(node.getNodeType())) {
+					Object value = ObjectFieldMapper.mapField(mapping.getFieldClass(), (ObjectResultNode) node);
+					mapping.map(result, value);
+					
+				} else if (DbResultNodeType.ARRAY.equals(node.getNodeType())) {
+					Object value = ArrayFieldMapper.mapField(mapping.getField(), (ArrayResultNode) node);
+					mapping.map(result, value);
+				}
 			} catch (Exception e) {
 				LOG.error(e, e);
 			}
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public Class getResultClass() {
 		return resultClass;
 	}

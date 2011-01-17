@@ -5,11 +5,13 @@ public class DbTypeField {
 	private String name;
 	private int position;
 	private String type;
+	private String typeName;
 	
-	public DbTypeField(String fieldName, int fieldPosition, String fieldType) {
+	public DbTypeField(String fieldName, int fieldPosition, String fieldType, String fieldTypeName) {
 		this.name = new String(fieldName);
 		this.position = fieldPosition;
 		this.type = new String(fieldType);
+		this.typeName = new String(fieldTypeName);
 	}
 	public String getName() {
 		return name;
@@ -29,10 +31,12 @@ public class DbTypeField {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+	public String getTypeName() {
+		return typeName;
+	}
 	@Override
 	public String toString() {
 		return "DbTypeField [name=" + name + ", position=" + position
-				+ ", type=" + type + "]";
+				+ ", type=" + type + ", typeName=" + typeName + "]";
 	}
 }

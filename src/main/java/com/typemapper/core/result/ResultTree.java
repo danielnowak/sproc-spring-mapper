@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 public class ResultTree implements DbResultNode {
 	
 	
 	private Map<String, DbResultNode> children = new HashMap<String, DbResultNode>();
+	private static final Logger LOG = Logger.getLogger(ResultTree.class);
 
 	@Override
 	public String getType() {
@@ -45,7 +48,11 @@ public class ResultTree implements DbResultNode {
 	}
 	
 	public void addChild(DbResultNode node) {
-		children.put(node.getName(), node);
+		if (node != null) {
+			children.put(node.getName(), node);
+		} else {
+			LOG.warn("Trying to add null value to result tree");
+		}
 	}
 
 }

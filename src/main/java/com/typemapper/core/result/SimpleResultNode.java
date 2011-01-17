@@ -44,4 +44,10 @@ public class SimpleResultNode implements DbResultNode {
 	public DbResultNode getChildByName(String name) {
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return "SimpleResultNode [type=" + type + ", value=" + value
+				+ ", name=" + name + "]";
+	}
 }
