@@ -50,7 +50,8 @@ public class DbTypeRegister {
 			initRegister(connection);
 		}
 		String id = register.getTypeIdentifier(name);
-		return register.types.get(id);
+		Map<String, DbType> types = register.types;
+		return types.get(id);
 	}
 
 	private static synchronized void initRegister(Connection connection) throws SQLException {

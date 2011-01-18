@@ -22,6 +22,7 @@ public class ObjectResultNode implements DbResultNode {
 		this.children = new ArrayList<DbResultNode>();
 		this.name = name;
 		List<String> values = ParseUtils.getStringList(value);
+		System.out.println("TypeName : " + typeName);
 		DbType dbType = DbTypeRegister.getDbType(typeName, connection);
 		int i = 1;
 		for (String fieldValue : values) {
@@ -29,6 +30,8 @@ public class ObjectResultNode implements DbResultNode {
 			DbResultNode node = null;
 			if (fieldDef.getType().equals("USER-DEFINED")) {
 				node = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), connection);
+			} else if (fieldDef.getType().equals("ARRAY")) {
+				node = new ArrayResultNode(fieldDef.getName(), fieldValue, fieldDef.getTypeName().substring(1), connection);
 			} else {
 				node = new SimpleResultNode(fieldValue, fieldDef.getName());
 			}

@@ -32,16 +32,11 @@ CREATE TYPE tmp.simple_type_for_embed AS (i int, l int, c varchar, str varchar);
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
-		connection.prepareStatement("CREATE SCHEMA tmp;").execute();
-		connection.prepareStatement("CREATE TYPE tmp.simple_type AS (i int, l int, c varchar);").execute();
-		connection.prepareStatement("CREATE TYPE tmp.simple_type_for_embed AS (i int, l int, c varchar, str varchar);").execute();
-		connection.prepareStatement("CREATE TYPE tmp.complex_type AS (obj tmp.simple_type, str varchar);").execute();
 	}
 	
 	@After
 	public void tearDown() throws SQLException {
-		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
+		//connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
 	}
 	
 	

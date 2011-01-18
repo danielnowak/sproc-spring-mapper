@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.typemapper.core.Mapping;
+import com.typemapper.core.result.ArrayResultNode;
 import com.typemapper.core.result.DbResultNode;
 import com.typemapper.core.result.DbResultNodeType;
 import com.typemapper.core.result.ObjectResultNode;
@@ -21,6 +22,8 @@ public class ObjectFieldMapper {
 				mapping.map(result, mapping.getFieldMapper().mapField(currentNode.getValue()));
 			} else if (DbResultNodeType.OBJECT.equals(currentNode.getNodeType())) {
 				mapping.map(result, mapField(mapping.getFieldClass(), (ObjectResultNode) currentNode));
+			} else if (DbResultNodeType.ARRAY.equals(currentNode.getNodeType())) {
+				mapping.map(result, ArrayFieldMapper.mapField(mapping.getField(), (ArrayResultNode) currentNode));
 			}
 		}
 		
