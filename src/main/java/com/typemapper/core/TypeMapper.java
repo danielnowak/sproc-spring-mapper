@@ -9,6 +9,9 @@ import org.postgresql.jdbc4.Jdbc4Array;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
+import com.typemapper.core.db.DbFunction;
+import com.typemapper.core.db.DbFunctionRegister;
+import com.typemapper.core.db.DbTypeField;
 import com.typemapper.core.fieldMapper.ArrayFieldMapper;
 import com.typemapper.core.fieldMapper.ObjectFieldMapper;
 import com.typemapper.core.result.ArrayResultNode;
@@ -17,6 +20,7 @@ import com.typemapper.core.result.DbResultNodeType;
 import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
+import com.typemapper.parser.postgres.ParseUtils;
 
 @SuppressWarnings("rawtypes")
 public class TypeMapper implements ParameterizedRowMapper {
@@ -55,14 +59,33 @@ public class TypeMapper implements ParameterizedRowMapper {
 			Object obj = null;
 			DbResultNode node = null;
 			try {
-				obj = set.getArray(i);
 				obj = set.getObject(i);
 				name = set.getMetaData().getColumnName(i);
 			} catch (SQLException e) {
 				LOG.error("Exception while extracting result Tree", e);
 				break;
 			}
-			if (obj instanceof PGobject) {
+			if (obj instanceof PGobject && ((PGobject)obj).getType().equals("record")) {
+ 				PGobject pgObj = (PGobject) obj;
+				DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
+				List<String> fieldValues = ParseUtils.getStringList(pgObj.getValue());
+				int j = 1;
+				for (String fieldValue : fieldValues) {
+					DbTypeField fieldDef = function.getFieldByPos(j);
+					DbResultNode currentNode = null;
+					if (fieldDef.getType().equals("USER-DEFINED")) {
+						currentNode = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), set.getStatement().getConnection());
+					} else if (fieldDef.getType().equals("ARRAY")) {
+						currentNode = new ArrayResultNode(fieldDef.getName(), fieldValue, fieldDef.getTypeName().substring(1), set.getStatement().getConnection());
+					} else {
+						currentNode = new SimpleResultNode(fieldValue, fieldDef.getName());
+					}
+					tree.addChild(currentNode);
+					j++;
+				}
+				i++;
+				continue;
+			} else if (obj instanceof PGobject) {
 				PGobject pgObj = (PGobject) obj;
 				node = new ObjectResultNode(pgObj.getValue(), name, pgObj.getType(), set.getStatement().getConnection());
 			} else if (obj instanceof Jdbc4Array) {
