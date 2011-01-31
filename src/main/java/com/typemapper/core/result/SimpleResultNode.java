@@ -5,19 +5,12 @@ import java.util.List;
 
 public class SimpleResultNode implements DbResultNode {
 	
-	protected String type;
 	protected String value;
 	protected String name;
 
 	public SimpleResultNode(Object obj, String name) {
-		this.type = obj.getClass().toString();
 		this.value = obj.toString();
 		this.name = name;
-	}
-
-	@Override
-	public String getType() {
-		return type;
 	}
 
 	@Override
@@ -47,7 +40,8 @@ public class SimpleResultNode implements DbResultNode {
 
 	@Override
 	public String toString() {
-		return "SimpleResultNode [type=" + type + ", value=" + value
+		return "SimpleResultNode [value=" + value
 				+ ", name=" + name + "]";
 	}
+
 }

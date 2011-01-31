@@ -5,15 +5,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.typemapper.core.db.DbType;
 import com.typemapper.core.db.DbTypeRegister;
 import com.typemapper.parser.postgres.ParseUtils;
 
 public class ArrayResultNode implements DbResultNode {
-	
-	private static final Logger LOG = Logger.getLogger(ArrayResultNode.class); 
 	
 	private String name;
 	private String type;
@@ -27,7 +23,6 @@ public class ArrayResultNode implements DbResultNode {
 		this.children = new ArrayList<DbResultNode>();
 		List<String> elements = ParseUtils.getArrayElements(value);
 		for (String element : elements) {
-			LOG.info(element);
 			children.add(new ObjectResultNode(element, "", typeName, connection));
 		}
 	}
@@ -35,11 +30,6 @@ public class ArrayResultNode implements DbResultNode {
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public String getType() {
-		return type;
 	}
 
 	@Override

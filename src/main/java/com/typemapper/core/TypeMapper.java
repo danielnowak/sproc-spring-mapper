@@ -52,6 +52,7 @@ public class TypeMapper implements ParameterizedRowMapper {
 	}
 	
 	private ResultTree extractResultTree(ResultSet set) throws SQLException {
+		LOG.debug("Extracting result tree");
 		ResultTree tree = new ResultTree();
 		int i = 1;
 		while (true) {
@@ -62,13 +63,15 @@ public class TypeMapper implements ParameterizedRowMapper {
 				obj = set.getObject(i);
 				name = set.getMetaData().getColumnName(i);
 			} catch (SQLException e) {
-				LOG.error("Exception while extracting result Tree", e);
+				LOG.debug("End of result set reached");
 				break;
 			}
 			if (obj instanceof PGobject && ((PGobject)obj).getType().equals("record")) {
  				PGobject pgObj = (PGobject) obj;
 				DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
-				List<String> fieldValues = ParseUtils.getStringList(pgObj.getValue());
+//				List<String> fieldValues = ParseUtils.getArrayElements(pgObj.getValue());
+				List<String>  fieldValues = ParseUtils.postgresROW2StringList(pgObj.getValue());
+				
 				int j = 1;
 				for (String fieldValue : fieldValues) {
 					DbTypeField fieldDef = function.getFieldByPos(j);
@@ -96,10 +99,10 @@ public class TypeMapper implements ParameterizedRowMapper {
 			} else {
 				node = new SimpleResultNode(obj, name);
 			}
-			LOG.info("obj = " + obj);
 			tree.addChild(node);
 			i++;
 		}
+		LOG.info("Extracted ResultTree: " + tree);
 		return tree;
 	}
 
