@@ -14,23 +14,33 @@ public class DbFunctionRegister {
 	
 	
 	public DbFunctionRegister(Connection connection) throws SQLException {
-		
-		this.functions = new HashMap<String, DbFunction>();
-		PreparedStatement statement = connection.prepareStatement("SELECT specific_schema, specific_name,  parameter_name, ordinal_position, data_type, udt_name FROM information_schema.parameters WHERE parameter_mode='OUT';");
-		ResultSet resultSet = statement.executeQuery();
-		while (resultSet.next()) {
-			int i = 1;
-			String functionSchema = resultSet.getString(i++);
-			String functionName = resultSet.getString(i++);
-			int sep = functionName.lastIndexOf('_');
-			if (sep != -1) {
-				functionName = functionName.substring(0, sep);
+		PreparedStatement statement =  null;
+		ResultSet resultSet = null;
+		try {
+			this.functions = new HashMap<String, DbFunction>();
+			statement = connection.prepareStatement("SELECT specific_schema, specific_name,  parameter_name, ordinal_position, data_type, udt_name FROM information_schema.parameters WHERE parameter_mode='OUT';");
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				int i = 1;
+				String functionSchema = resultSet.getString(i++);
+				String functionName = resultSet.getString(i++);
+				int sep = functionName.lastIndexOf('_');
+				if (sep != -1) {
+					functionName = functionName.substring(0, sep);
+				}
+				String paramName = resultSet.getString(i++);
+				int paramPosition = resultSet.getInt(i++);
+				String paramType = resultSet.getString(i++);
+				String paramTypeName = resultSet.getString(i++);
+				addFunctionParam(functionSchema, functionName, paramName, paramPosition, paramType, paramTypeName);
 			}
-			String paramName = resultSet.getString(i++);
-			int paramPosition = resultSet.getInt(i++);
-			String paramType = resultSet.getString(i++);
-			String paramTypeName = resultSet.getString(i++);
-			addFunctionParam(functionSchema, functionName, paramName, paramPosition, paramType, paramTypeName);
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (statement != null) {
+				statement.close();
+			}
 		}
 	}
 
