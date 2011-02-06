@@ -33,6 +33,11 @@ public class TypeMapper implements ParameterizedRowMapper {
 	TypeMapper(Class resultClass) {
 		this.resultClass = resultClass;
 		mappings = Mapping.getMappingsForClass(this.resultClass);
+		Class parentClass = this.resultClass.getSuperclass();
+		while (parentClass != null) {
+			mappings.addAll(Mapping.getMappingsForClass(parentClass));
+			parentClass = parentClass.getSuperclass();
+		}
 	}
 
 	@Override
