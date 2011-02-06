@@ -19,9 +19,23 @@ public class FieldMapperRegister {
 		
 		FieldMapper charMapper = new CharFieldMapper();
 		FieldMapperRegister.register(char.class, charMapper);
+		FieldMapperRegister.register(Character.class, charMapper);
 		
 		FieldMapper stringMapper = new StringFieldMapper();
 		FieldMapperRegister.register(String.class, stringMapper);
+		
+		FieldMapper doubleMapper = new DoubleFieldMapper();
+		FieldMapperRegister.register(Double.class, doubleMapper);
+		FieldMapperRegister.register(double.class, doubleMapper);
+		
+		FieldMapper floatMapper = new FloatFieldMapper();
+		FieldMapperRegister.register(Float.class, floatMapper);
+		FieldMapperRegister.register(float.class, floatMapper);
+		
+		FieldMapper shortMapper = new ShortFieldMapper();
+		FieldMapperRegister.register(Short.class, shortMapper);
+		FieldMapperRegister.register(short.class, shortMapper);
+		
 		
 	}
 	

@@ -5,11 +5,15 @@ import java.util.List;
 
 public class SimpleResultNode implements DbResultNode {
 	
-	protected String value;
-	protected String name;
+	protected final String value;
+	protected final String name;
 
 	public SimpleResultNode(Object obj, String name) {
-		this.value = obj.toString();
+		if (obj == null ) {
+			this.value = "";	
+		} else {
+			this.value = obj.toString();
+		}
 		this.name = name;
 	}
 
