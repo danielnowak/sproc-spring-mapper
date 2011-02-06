@@ -20,7 +20,9 @@ import com.typemapper.core.result.DbResultNodeType;
 import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
+import com.typemapper.parser.postgres.Element;
 import com.typemapper.parser.postgres.ParseUtils;
+import com.typemapper.parser.postgres.RowMapper;
 
 @SuppressWarnings("rawtypes")
 public class TypeMapper implements ParameterizedRowMapper {
@@ -75,8 +77,8 @@ public class TypeMapper implements ParameterizedRowMapper {
  				PGobject pgObj = (PGobject) obj;
 				DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
 //				List<String> fieldValues = ParseUtils.getArrayElements(pgObj.getValue());
-				List<String>  fieldValues = ParseUtils.postgresROW2StringList(pgObj.getValue());
-				
+				List<String>  fieldValues = ParseUtils.getStringList(pgObj.getValue());
+
 				int j = 1;
 				for (String fieldValue : fieldValues) {
 					DbTypeField fieldDef = function.getFieldByPos(j);

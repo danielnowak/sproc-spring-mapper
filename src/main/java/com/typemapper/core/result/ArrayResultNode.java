@@ -21,7 +21,7 @@ public class ArrayResultNode implements DbResultNode {
 		this.type = typeName;
 		this.typeDef = DbTypeRegister.getDbType(typeName, connection);
 		this.children = new ArrayList<DbResultNode>();
-		List<String> elements = ParseUtils.getArrayElements(value);
+		List<String> elements = ParseUtils.getStringList(value);
 		for (String element : elements) {
 			children.add(new ObjectResultNode(element, "", typeName, connection));
 		}
