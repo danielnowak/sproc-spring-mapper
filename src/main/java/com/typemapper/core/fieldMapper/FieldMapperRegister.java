@@ -36,6 +36,10 @@ public class FieldMapperRegister {
 		FieldMapperRegister.register(Short.class, shortMapper);
 		FieldMapperRegister.register(short.class, shortMapper);
 		
+		FieldMapper booleanMapper = new BooleanFieldMapper();
+		FieldMapperRegister.register(Boolean.class, booleanMapper);
+		FieldMapperRegister.register(boolean.class, booleanMapper);
+		
 		
 	}
 	
