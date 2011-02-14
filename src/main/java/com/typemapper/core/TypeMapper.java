@@ -20,9 +20,7 @@ import com.typemapper.core.result.DbResultNodeType;
 import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
-import com.typemapper.parser.postgres.Element;
 import com.typemapper.parser.postgres.ParseUtils;
-import com.typemapper.parser.postgres.RowMapper;
 
 @SuppressWarnings("rawtypes")
 public class TypeMapper implements ParameterizedRowMapper {

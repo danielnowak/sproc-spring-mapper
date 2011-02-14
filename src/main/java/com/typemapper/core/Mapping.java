@@ -10,12 +10,14 @@ import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.Embed;
 import com.typemapper.core.fieldMapper.FieldMapper;
 import com.typemapper.core.fieldMapper.FieldMapperRegister;
+import com.typemapper.core.fieldMapper.ValueExtractorFieldMapper;
 import com.typemapper.exception.NotsupportedTypeException;
 
 
 public class Mapping {
 	
 	private final String name;
+	private final Class<? extends ValueAdapter<?, ?>> valueAdapter;
 	private final Field field;
 	private boolean embed;
 	private Field embedField;
@@ -30,7 +32,7 @@ public class Mapping {
 		for (final Field field : fields) {
 			DatabaseField annotation = field.getAnnotation(DatabaseField.class);
 			if (annotation != null) {
-				result.add(new Mapping(field, annotation.name(), embed, embedField));
+				result.add(new Mapping(field, annotation.name(), embed, embedField, annotation.adapter()));
 			}
 			if (!embed) {
 				Embed embedAnnotation = field.getAnnotation(Embed.class);
@@ -42,11 +44,12 @@ public class Mapping {
 		return result;
 	}
 	
-	Mapping(Field field, String name, boolean embed, final Field embedField) {
+	Mapping(Field field, String name, boolean embed, final Field embedField, Class<? extends ValueAdapter<?, ?>> valueAdapter) {
 		this.name = name;
 		this.field = field;
 		this.embed = embed;
 		this.embedField = embedField;
+		this.valueAdapter = valueAdapter;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -54,7 +57,11 @@ public class Mapping {
 		return field.getType();
 	}
 	
-	public Method getSetter(Field field) {
+	public Class<? extends ValueAdapter<?, ?>> getValueAdapter() {
+        return valueAdapter;
+    }
+
+    public Method getSetter(Field field) {
 		final String setterName = "set" + capitalize( field.getName() );
 		try {
 			return field.getDeclaringClass().getDeclaredMethod(setterName, field.getType());
@@ -98,13 +105,18 @@ public class Mapping {
 		return field;
 	}	
 	
-	public FieldMapper getFieldMapper() throws NotsupportedTypeException {
+	public FieldMapper getFieldMapper() throws NotsupportedTypeException, InstantiationException, IllegalAccessException {
 		FieldMapper mapper = FieldMapperRegister.getMapperForClass(getFieldClass());
 		if (mapper == null) {
-			throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
-		} else {
-			return mapper;
+		    // This feels a bit clunky...
+		    if (!AnyAdapter.class.equals(getValueAdapter())) {
+		        mapper = new ValueExtractorFieldMapper(getValueAdapter()); 
+		    }
+		    if (mapper == null) {
+		        throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
+		    }
 		}
+		return mapper;
 	}
 
 	public void map(Object target, Object value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {

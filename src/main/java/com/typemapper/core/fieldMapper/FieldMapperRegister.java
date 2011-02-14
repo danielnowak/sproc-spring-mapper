@@ -39,9 +39,6 @@ public class FieldMapperRegister {
 		FieldMapper booleanMapper = new BooleanFieldMapper();
 		FieldMapperRegister.register(Boolean.class, booleanMapper);
 		FieldMapperRegister.register(boolean.class, booleanMapper);
-		
-		FieldMapper enumMapper = new EnumFieldMapper();
-		FieldMapperRegister.register(Enum.class, enumMapper);
 	}
 	
 	@SuppressWarnings("rawtypes")

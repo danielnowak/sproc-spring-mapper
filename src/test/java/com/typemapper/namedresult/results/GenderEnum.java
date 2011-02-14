@@ -1,6 +1,6 @@
 package com.typemapper.namedresult.results;
 
-public enum SampleEnum {
+public enum GenderEnum {
 
     MALE, FEMALE;
     
