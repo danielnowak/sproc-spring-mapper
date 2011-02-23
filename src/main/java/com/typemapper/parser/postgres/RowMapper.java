@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.typemapper.parser.exception.RowParserException;
+
 public class RowMapper {
 	
     /**
@@ -24,8 +26,13 @@ public class RowMapper {
      */
     public final Element mapRow(final ResultSet rs, final String columnName) throws SQLException {
         final Element element = new Element();
-        final List<String> l = ParseUtils.postgresROW2StringList(rs.getString(columnName));
-        element.setRowList(l);
+        List<String> l;
+        try {
+            l = ParseUtils.postgresROW2StringList(rs.getString(columnName));
+        } catch (RowParserException e) {
+            throw new SQLException(e);
+        }
+                element.setRowList(l);
         return element;
     }
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.typemapper.core.db.DbType;
 import com.typemapper.core.db.DbTypeRegister;
+import com.typemapper.parser.exception.ArrayParserException;
 import com.typemapper.parser.postgres.ParseUtils;
 
 public class ArrayResultNode implements DbResultNode {
@@ -21,7 +22,12 @@ public class ArrayResultNode implements DbResultNode {
 		this.type = typeName;
 		this.typeDef = DbTypeRegister.getDbType(typeName, connection);
 		this.children = new ArrayList<DbResultNode>();
-		List<String> elements = ParseUtils.getStringList(value);
+		List<String> elements;
+		try {
+			elements = ParseUtils.postgresArray2StringList(value);
+		} catch (ArrayParserException e) {
+			throw new SQLException(e);
+		}
 		for (String element : elements) {
 			children.add(new ObjectResultNode(element, "", typeName, connection));
 		}

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.typemapper.core.db.DbType;
 import com.typemapper.core.db.DbTypeField;
 import com.typemapper.core.db.DbTypeRegister;
+import com.typemapper.parser.exception.RowParserException;
 import com.typemapper.parser.postgres.ParseUtils;
 
 public class ObjectResultNode implements DbResultNode {
@@ -25,23 +26,27 @@ public class ObjectResultNode implements DbResultNode {
 		this.type = typeName;
 		this.children = new ArrayList<DbResultNode>();
 		this.name = name;
-		List<String> values = ParseUtils.getStringList(value);
+		List<String> values;
+		try {
+			values = ParseUtils.postgresROW2StringList(value);
+		} catch (RowParserException e) {
+			throw new SQLException(e);
+		}
 		DbType dbType = DbTypeRegister.getDbType(typeName, connection);
 		int i = 1;
 		for (String fieldValue : values) {
 			DbTypeField fieldDef = dbType.getFieldByPos(i);
-			String parsedValue = ParseUtils.getString(fieldValue);
 			DbResultNode node = null;
 			if (fieldDef == null) {
 				LOG.error("Could not find field in " + dbType + " for pos " + i);
 				continue;
 			}
 			if (fieldDef.getType().equals("USER-DEFINED")) {
-				node = new ObjectResultNode(parsedValue, fieldDef.getName(), fieldDef.getTypeName(), connection);
+				node = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), connection);
 			} else if (fieldDef.getType().equals("ARRAY")) {
-				node = new ArrayResultNode(fieldDef.getName(), parsedValue, fieldDef.getTypeName().substring(1), connection);
+				node = new ArrayResultNode(fieldDef.getName(), fieldValue, fieldDef.getTypeName().substring(1), connection);
 			} else {
-				node = new SimpleResultNode(parsedValue, fieldDef.getName());
+				node = new SimpleResultNode(fieldValue, fieldDef.getName());
 			}
 			this.children.add(node);
 			i++;

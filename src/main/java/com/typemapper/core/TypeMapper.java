@@ -20,9 +20,8 @@ import com.typemapper.core.result.DbResultNodeType;
 import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
-import com.typemapper.parser.postgres.Element;
+import com.typemapper.parser.exception.RowParserException;
 import com.typemapper.parser.postgres.ParseUtils;
-import com.typemapper.parser.postgres.RowMapper;
 
 public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	
@@ -34,6 +33,7 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	TypeMapper(Class<ITEM> resultClass) {
 		this.resultClass = resultClass;
 		mappings = Mapping.getMappingsForClass(this.resultClass);
+		@SuppressWarnings("rawtypes")
 		Class parentClass = this.resultClass.getSuperclass();
 		while (parentClass != null) {
 			mappings.addAll(Mapping.getMappingsForClass(parentClass));
@@ -76,7 +76,12 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
  				PGobject pgObj = (PGobject) obj;
 				DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
 //				List<String> fieldValues = ParseUtils.getArrayElements(pgObj.getValue());
-				List<String>  fieldValues = ParseUtils.getStringList(pgObj.getValue());
+				List<String> fieldValues;
+				try {
+					fieldValues = ParseUtils.postgresROW2StringList(pgObj.getValue());
+				} catch (RowParserException e) {
+					throw new SQLException(e);
+				}
 
 				int j = 1;
 				for (String fieldValue : fieldValues) {
