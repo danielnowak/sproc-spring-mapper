@@ -18,22 +18,21 @@ import com.typemapper.core.result.ObjectResultNode;
 import com.typemapper.core.result.ResultTree;
 import com.typemapper.core.result.SimpleResultNode;
 
-@SuppressWarnings("rawtypes")
-public class TypeMapper implements ParameterizedRowMapper {
+public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	
 	private static final Logger LOG = Logger.getLogger(TypeMapper.class);
 	
-	private final Class resultClass;
+	private final Class<ITEM> resultClass;
 	private final List<Mapping> mappings;
 	
-	TypeMapper(Class resultClass) {
+	TypeMapper(Class<ITEM> resultClass) {
 		this.resultClass = resultClass;
 		mappings = Mapping.getMappingsForClass(this.resultClass);
 	}
 
 	@Override
-	public Object mapRow(ResultSet set, int count) throws SQLException {
-		Object result = null;
+	public ITEM mapRow(ResultSet set, int count) throws SQLException {
+		ITEM result = null;
 		try {
 			
 			result = getResultClass().newInstance();
@@ -103,7 +102,7 @@ public class TypeMapper implements ParameterizedRowMapper {
 		}
 	}
 
-	public Class getResultClass() {
+	public Class<ITEM> getResultClass() {
 		return resultClass;
 	}
 
