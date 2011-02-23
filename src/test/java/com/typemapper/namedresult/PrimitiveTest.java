@@ -4,27 +4,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import com.typemapper.AbstractTest;
 import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
 import com.typemapper.namedresult.results.ClassWithEmbed;
 import com.typemapper.namedresult.results.ClassWithPrimitives;
 
 public class PrimitiveTest extends AbstractTest {
-	
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-	}
-	
-	@After
-	public void tearDown() throws SQLException {
-		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
-	}
 
 	
 	@Test

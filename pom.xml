@@ -3,11 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.typemapper</groupId>
     <artifactId>sproc-spring-mapper</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>sproc-spring-mapper</name>
-    <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

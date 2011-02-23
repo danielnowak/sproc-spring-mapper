@@ -4,11 +4,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import com.typemapper.AbstractTest;
 import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
 import com.typemapper.namedresult.results.ClassWithObject;
@@ -17,29 +16,6 @@ import com.typemapper.namedresult.results.ClassWithObjectWithObject;
 
 
 public class ObjectTest extends AbstractTest {
-	
-	/*
-DROP SCHEMA IF EXISTS tmp CASCADE;
-CREATE SCHEMA tmp;
-CREATE TYPE tmp.simple_type AS (i int, l int, c varchar);
-CREATE TYPE tmp.complex_type AS (simple tmp.simple_type, c varchar);
-CREATE TYPE tmp.array_type AS (simple tmp.simple_type[], c varchar);
-CREATE TYPE tmp.simple_type_for_embed AS (i int, l int, c varchar, str varchar);
-
-	 */
-	
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-	}
-	
-	@After
-	public void tearDown() throws SQLException {
-		//connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
-	}
-	
-	
 
 	@Test
 	public void testPrimitiveMappings() throws SQLException {

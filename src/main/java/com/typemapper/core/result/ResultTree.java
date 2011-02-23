@@ -14,11 +14,6 @@ public class ResultTree implements DbResultNode {
 	private static final Logger LOG = Logger.getLogger(ResultTree.class);
 
 	@Override
-	public String getType() {
-		return null;
-	}
-
-	@Override
 	public DbResultNodeType getNodeType() {
 		return null;
 	}
@@ -53,6 +48,11 @@ public class ResultTree implements DbResultNode {
 		} else {
 			LOG.warn("Trying to add null value to result tree");
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "ResultTree [children=" + children + "]";
 	}
 
 }

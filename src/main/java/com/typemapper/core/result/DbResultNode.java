@@ -6,8 +6,6 @@ public interface DbResultNode {
 	
 	String getName();
 	
-	String getType();
-	
 	DbResultNodeType getNodeType();
 	
 	String getValue();

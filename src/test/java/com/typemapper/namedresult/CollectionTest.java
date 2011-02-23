@@ -2,15 +2,13 @@ package com.typemapper.namedresult;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import com.typemapper.AbstractTest;
 import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
 import com.typemapper.namedresult.results.ClassWithList;
@@ -19,16 +17,7 @@ import com.typemapper.namedresult.results.ClassWithPrimitives;
 import com.typemapper.namedresult.results.ClassWithSet;
 
 public class CollectionTest extends AbstractTest {
-	
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-	}
-	
-	@After
-	public void tearDown() throws SQLException {
-		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
-	}
+
 	
 	@Test
 	public void testSimpleList() throws Exception {

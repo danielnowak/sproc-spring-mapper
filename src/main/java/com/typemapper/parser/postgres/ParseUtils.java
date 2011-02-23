@@ -694,8 +694,11 @@ public class ParseUtils {
      * @return
      */
     public static String getString(final String value) {
+    	String result = new String(value);
         if (value != null && value.length() > 0) {
-            return value;
+        	result = result.replaceAll("^\\\\+\"+", "");
+        	result = result.replaceAll("\\\\+\"+$", "");
+            return result;
         }
         return null;
     }
