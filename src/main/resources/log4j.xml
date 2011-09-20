@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
+<!-- Only for local testing. This file will not make it into any distribution -->
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-  <appender name="console" class="org.apache.log4j.ConsoleAppender"> 
-    <param name="Target" value="System.out"/> 
-    <layout class="org.apache.log4j.PatternLayout"> 
-      <param name="ConversionPattern" value="%-5p %c{1} - %m%n"/> 
-    </layout> 
-  </appender> 
 
-  <root> 
-    <priority value ="debug" /> 
-    <appender-ref ref="console" /> 
-  </root>
-  
+    <appender name="default" class="org.apache.log4j.ConsoleAppender">
+        <param name="encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %l %m%n"/>
+        </layout>
+    </appender>
+
+
+    <logger name="de.typemapper" additivity="false">
+        <level value="debug"/> 
+        <appender-ref ref="default"/>
+    </logger>
+
 </log4j:configuration>

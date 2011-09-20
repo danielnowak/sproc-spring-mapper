@@ -10,8 +10,10 @@ import org.junit.Test;
 import com.typemapper.AbstractTest;
 import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
+import com.typemapper.core.db.DbFunctionRegister;
 import com.typemapper.sproctest.result.ArrayResult;
 import com.typemapper.sproctest.result.PrimitiveResult;
+import com.typemapper.sproctest.result.PrimitiveResult2;
 
 public class SprocPrimitiveTest extends AbstractTest {
 
@@ -19,6 +21,7 @@ public class SprocPrimitiveTest extends AbstractTest {
 	
 	@Test
 	public void testPrimitives() throws SQLException {
+		connection.createStatement().execute("set search_path to tmp,tmp2");
 		final PreparedStatement ps = connection.prepareStatement("SELECT tmp.primitives_function();");
 		final ResultSet rs = ps.executeQuery();
 		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(PrimitiveResult.class);
@@ -31,7 +34,25 @@ public class SprocPrimitiveTest extends AbstractTest {
 	}
 	
 	@Test
+	public void testPrimitivesWithSearchPath() throws SQLException {
+		connection.createStatement().execute("set search_path to tmp2,tmp");
+		DbFunctionRegister.reInitRegistry(connection);
+		final PreparedStatement ps = connection.prepareStatement("SELECT primitives_function();");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(PrimitiveResult2.class);
+		int i = 0;
+		while( rs.next() ) {
+			PrimitiveResult2 result = (PrimitiveResult2) mapper.mapRow(rs, i++);
+			Assert.assertEquals(0, result.getId().intValue());
+			Assert.assertEquals("result_code", result.getMsg());
+			Assert.assertEquals("result_code_2", result.getMsg2());
+		}
+	}	
+	
+	@Test
 	public void testObjectArray() throws SQLException {
+		connection.createStatement().execute("set search_path to tmp,tmp2");
+		DbFunctionRegister.reInitRegistry(connection);
 		final PreparedStatement ps = connection.prepareStatement("SELECT tmp.array_function();");
 		final ResultSet rs = ps.executeQuery();
 		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ArrayResult.class);

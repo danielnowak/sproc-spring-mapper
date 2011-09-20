@@ -121,6 +121,10 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 		for (Mapping mapping :getMappings()) {
 			try {
 				DbResultNode node = tree.getChildByName(mapping.getName());
+				if (node == null) {
+					LOG.error("Could not map property with name" + mapping.getName());
+					continue;
+				}
 				if (DbResultNodeType.SIMPLE.equals(node.getNodeType())) {
 					String fieldStringValue = node.getValue();
 					Object value = mapping.getFieldMapper().mapField(fieldStringValue);

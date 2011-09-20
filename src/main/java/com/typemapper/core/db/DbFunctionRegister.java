@@ -5,18 +5,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class DbFunctionRegister {
 	
 	private Map<String, DbFunction> functions = null;
+	private Map<String, List<String>> functionNameToFQName = null;
 	private static DbFunctionRegister register;
+	private String searchPath = null;
 	
 	
 	public DbFunctionRegister(Connection connection) throws SQLException {
 		PreparedStatement statement =  null;
 		ResultSet resultSet = null;
 		try {
+			ResultSet searchPathResult = connection.createStatement().executeQuery("show search_path;");
+			searchPathResult.next();
+			searchPath = searchPathResult.getString(1);
+			this.functionNameToFQName = new HashMap<String, List<String>>();
 			this.functions = new HashMap<String, DbFunction>();
 			statement = connection.prepareStatement("SELECT specific_schema, specific_name,  parameter_name, ordinal_position, data_type, udt_name FROM information_schema.parameters WHERE parameter_mode='OUT';");
 			resultSet = statement.executeQuery();
@@ -47,24 +55,45 @@ public class DbFunctionRegister {
 	private void addFunctionParam(String functionSchema, String functionName,
 			String paramName, int paramPosition, String paramType,
 			String paramTypeName) {
-		final String functionId = getFunctionIdentifier(functionName);
+		final String functionId = getFunctionIdentifier(functionSchema, functionName);
 		DbFunction function = functions.get(functionId);
 		if (function == null) {
 			function = new DbFunction(functionSchema, functionName);
-			functions.put(functionId, function);
+			addFunction(function);
 		}
 		function.addOutParam(new DbTypeField(paramName, paramPosition, paramType, paramTypeName));
 	}
 	
-	private static String getFunctionIdentifier(String functionName) {
-		return functionName;
+	private void addFunction(DbFunction function) {
+		String functionIdentifier = getFunctionIdentifier(function.getSchema(), function.getName());
+		functions.put(functionIdentifier, function);
+		List<String> list = functionNameToFQName.get(function.getName());
+		if (list == null) {
+			list = new LinkedList<String>();
+			functionNameToFQName.put(function.getName(), list);
+		}
+		list.add(functionIdentifier);
+	}
+
+	private static String getFunctionIdentifier(String schema, String functionName) {
+		return schema + "." + functionName;
 	}
 
 	public static final DbFunction getFunction(String name, Connection connection) throws SQLException {
 		if (register == null) {
 			initRegistry(connection);
 		}
-		return register.functions.get(DbFunctionRegister.getFunctionIdentifier(name));
+		List<String> list = register.functionNameToFQName.get(name);
+		if (list.size() == 1) {
+			return register.functions.get(list.get(0)); 
+		} else {
+			String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+			return register.functions.get(fqName);
+		}
+	}
+	
+	public static void reInitRegistry(Connection connection) throws SQLException {
+		register = new DbFunctionRegister(connection);
 	}
 
 	private static synchronized void initRegistry(Connection connection) throws SQLException {
