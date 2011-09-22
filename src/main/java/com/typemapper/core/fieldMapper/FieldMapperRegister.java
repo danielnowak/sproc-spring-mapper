@@ -1,5 +1,6 @@
 package com.typemapper.core.fieldMapper;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,9 @@ public class FieldMapperRegister {
 	private static final Map<Class, FieldMapper> register = new HashMap<Class, FieldMapper>();
 	
 	static {
+		FieldMapper dateFieldMapper = new DateFieldMapper();
+		FieldMapperRegister.register(Date.class, dateFieldMapper);
+		
 		FieldMapper integerMapper = new IntegerFieldMapper();
 		FieldMapperRegister.register(int.class, integerMapper);
 		FieldMapperRegister.register(Integer.class, integerMapper);

@@ -122,7 +122,7 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 			try {
 				DbResultNode node = tree.getChildByName(mapping.getName());
 				if (node == null) {
-					LOG.error("Could not map property with name" + mapping.getName());
+					LOG.error("Could not map property with name " + mapping.getName());
 					continue;
 				}
 				if (DbResultNodeType.SIMPLE.equals(node.getNodeType())) {

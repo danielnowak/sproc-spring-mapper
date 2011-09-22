@@ -13,6 +13,7 @@ import java.util.Set;
 import com.typemapper.core.result.ArrayResultNode;
 import com.typemapper.core.result.DbResultNode;
 import com.typemapper.core.result.ObjectResultNode;
+import com.typemapper.core.result.SimpleResultNode;
 import com.typemapper.exception.NotsupportedTypeException;
 
 public class ArrayFieldMapper {
@@ -28,7 +29,13 @@ public class ArrayFieldMapper {
 		for (DbResultNode child : node.getChildren()) {
 			ParameterizedType type = (ParameterizedType) field.getGenericType();
 			Type[] actualTypeArguments = type.getActualTypeArguments();
-			Object obj = ObjectFieldMapper.mapField((Class) actualTypeArguments[0], (ObjectResultNode) child);
+			Object obj = null;
+			if (child instanceof ObjectResultNode) {
+				obj = ObjectFieldMapper.mapField((Class) actualTypeArguments[0], (ObjectResultNode) child);
+			} else if (child instanceof SimpleResultNode) {
+				FieldMapper mapperForClass = FieldMapperRegister.getMapperForClass((Class) actualTypeArguments[0]);
+				obj = mapperForClass.mapField(child.getValue());
+			}
 			result.add(obj);
 		}
 		return result;

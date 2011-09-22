@@ -79,11 +79,15 @@ public class DbTypeRegister {
 			initRegister(connection);
 		}
 		List<String> list = register.typeNameToFQN.get(name);
-		if (list.size() == 1) {
-			return register.types.get(list.get(0));
+		if (list != null) {
+			if (list.size() == 1) {
+				return register.types.get(list.get(0));
+			} else {
+				String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+				return register.types.get(fqName);
+			}
 		} else {
-			String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-			return register.types.get(fqName);
+			return null;
 		}
 	}
 

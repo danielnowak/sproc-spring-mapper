@@ -29,7 +29,11 @@ public class ArrayResultNode implements DbResultNode {
 			throw new SQLException(e);
 		}
 		for (String element : elements) {
-			children.add(new ObjectResultNode(element, "", typeName, connection));
+			if (typeDef != null) {
+				children.add(new ObjectResultNode(element, "", typeName, connection));
+			} else {
+				children.add(new SimpleResultNode(element, ""));
+			}
 		}
 	}
 
