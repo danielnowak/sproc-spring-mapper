@@ -10,7 +10,7 @@ public class DateFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(DateFieldMapper.class); 
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return new SimpleDateFormat("yyyy-mm-dd k:m:s").parse(string);
 		} catch (ParseException e) {

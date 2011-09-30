@@ -27,7 +27,7 @@ public class ObjectFieldMapper {
 				continue;
 			}
 			if (DbResultNodeType.SIMPLE.equals(currentNode.getNodeType())) {
-				mapping.map(result, mapping.getFieldMapper().mapField(currentNode.getValue()));
+				mapping.map(result, mapping.getFieldMapper().mapField(currentNode.getValue(), mapping.getFieldClass()));
 			} else if (DbResultNodeType.OBJECT.equals(currentNode.getNodeType())) {
 				mapping.map(result, mapField(mapping.getFieldClass(), (ObjectResultNode) currentNode));
 			} else if (DbResultNodeType.ARRAY.equals(currentNode.getNodeType())) {

@@ -7,7 +7,7 @@ public class LongFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(LongFieldMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return Long.parseLong(string);
 		} catch (NumberFormatException e) {

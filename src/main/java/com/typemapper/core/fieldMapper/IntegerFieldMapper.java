@@ -9,7 +9,7 @@ public class IntegerFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(TypeMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return Integer.parseInt(string);
 		} catch (NumberFormatException e) {

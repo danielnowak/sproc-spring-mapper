@@ -7,7 +7,7 @@ public class ShortFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(ShortFieldMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return Short.parseShort(string);
 		} catch (NumberFormatException e) {

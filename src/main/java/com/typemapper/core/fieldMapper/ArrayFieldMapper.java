@@ -34,7 +34,7 @@ public class ArrayFieldMapper {
 				obj = ObjectFieldMapper.mapField((Class) actualTypeArguments[0], (ObjectResultNode) child);
 			} else if (child instanceof SimpleResultNode) {
 				FieldMapper mapperForClass = FieldMapperRegister.getMapperForClass((Class) actualTypeArguments[0]);
-				obj = mapperForClass.mapField(child.getValue());
+				obj = mapperForClass.mapField(child.getValue(), (Class) actualTypeArguments[0]);
 			}
 			result.add(obj);
 		}

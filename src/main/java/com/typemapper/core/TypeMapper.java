@@ -127,7 +127,7 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 				}
 				if (DbResultNodeType.SIMPLE.equals(node.getNodeType())) {
 					String fieldStringValue = node.getValue();
-					Object value = mapping.getFieldMapper().mapField(fieldStringValue);
+					Object value = mapping.getFieldMapper().mapField(fieldStringValue, mapping.getFieldClass());
 					mapping.map(result, value);
 					
 				} else if (DbResultNodeType.OBJECT.equals(node.getNodeType())) {

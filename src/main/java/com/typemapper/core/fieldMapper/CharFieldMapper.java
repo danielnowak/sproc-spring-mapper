@@ -7,7 +7,7 @@ public class CharFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(CharFieldMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		if (string.length() == 1) {
 			return string.charAt(0);
 		} else {

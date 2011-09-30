@@ -8,7 +8,7 @@ public class FloatFieldMapper implements FieldMapper {
 	
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return Float.parseFloat(string);
 		} catch (NumberFormatException e) {

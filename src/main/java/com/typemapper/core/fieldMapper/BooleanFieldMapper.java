@@ -12,7 +12,7 @@ public class BooleanFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(CharFieldMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return ParseUtils.getBoolean(string);
 		} catch (ParserException e) {

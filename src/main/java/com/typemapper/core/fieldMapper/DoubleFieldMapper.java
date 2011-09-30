@@ -7,7 +7,7 @@ public class DoubleFieldMapper implements FieldMapper {
 	private static final Logger LOG = Logger.getLogger(DoubleFieldMapper.class);
 
 	@Override
-	public Object mapField(String string) {
+	public Object mapField(String string, Class clazz) {
 		try {
 			return Double.parseDouble(string);
 		} catch (NumberFormatException e) {

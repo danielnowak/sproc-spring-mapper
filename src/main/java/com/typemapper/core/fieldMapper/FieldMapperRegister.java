@@ -44,6 +44,8 @@ public class FieldMapperRegister {
 		FieldMapperRegister.register(Boolean.class, booleanMapper);
 		FieldMapperRegister.register(boolean.class, booleanMapper);
 		
+		FieldMapper enumMapper = new EnumrationFieldMapper();
+		FieldMapperRegister.register(Enum.class, enumMapper);
 		
 	}
 	
@@ -53,6 +55,9 @@ public class FieldMapperRegister {
 	}
 	@SuppressWarnings("rawtypes")
 	public static FieldMapper getMapperForClass(Class clazz) {
+		if (clazz.getEnumConstants() != null) {
+			return register.get(Enum.class);
+		}
 		return register.get(clazz);
 	}
 
