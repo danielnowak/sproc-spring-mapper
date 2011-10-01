@@ -4,9 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.Embed;
@@ -21,9 +22,16 @@ public class Mapping {
 	private final Field field;
 	private boolean embed;
 	private Field embedField;
+	@SuppressWarnings("rawtypes")
+	private static final Map<Class,List<Mapping>> cache = new HashMap<Class, List<Mapping>>(); 
 	
 	public static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") Class clazz) {
-		return getMappingsForClass(clazz, false, null);
+		List<Mapping> result = cache.get(clazz);
+		if (result == null) {
+			result = getMappingsForClass(clazz, false, null);
+			cache.put(clazz, result);
+		}
+		return result;
 	}
 	
 	@SuppressWarnings("rawtypes")
