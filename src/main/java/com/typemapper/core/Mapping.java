@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.typemapper.annotations.DatabaseField;
@@ -24,9 +26,21 @@ public class Mapping {
 		return getMappingsForClass(clazz, false, null);
 	}
 	
-	static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") Class clazz, boolean embed, Field embedField) {
+	@SuppressWarnings("rawtypes")
+	static List<Mapping> getMappingsForClass( Class clazz, boolean embed, Field embedField) {
 		List<Mapping> result = new ArrayList<Mapping>();
-		Field[] fields = clazz.getDeclaredFields();
+		List<Field> fields = new LinkedList<Field>();
+		for (Field field : clazz.getDeclaredFields()) {
+			fields.add(field);
+		}		
+		Class parentClass = clazz.getSuperclass();
+		while (parentClass != null) {
+			for (Field field : parentClass.getDeclaredFields()) {
+				fields.add(field);
+			}
+			parentClass = parentClass.getSuperclass();
+		}
+		
 		for (final Field field : fields) {
 			DatabaseField annotation = field.getAnnotation(DatabaseField.class);
 			if (annotation != null) {
