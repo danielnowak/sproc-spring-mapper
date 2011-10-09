@@ -12,7 +12,7 @@ public class DateFieldMapper implements FieldMapper {
 	@Override
 	public Object mapField(String string, Class clazz) {
 		try {
-			return new SimpleDateFormat("yyyy-mm-dd k:m:s").parse(string);
+			return new SimpleDateFormat("yyyy-MM-dd k:m:s").parse(string);
 		} catch (ParseException e) {
 			LOG.error("Could not parse date: " + string, e);
 			return null;
