@@ -2,11 +2,9 @@ package com.typemapper.core.fieldMapper;
 
 import org.apache.log4j.Logger;
 
-import com.typemapper.core.TypeMapper;
+public class IntFieldMapper implements FieldMapper {
 
-public class IntegerFieldMapper implements FieldMapper {
-	
-	private static final Logger LOG = Logger.getLogger(IntegerFieldMapper.class);
+	private static final Logger LOG = Logger.getLogger(IntFieldMapper.class);
 
 	@Override
 	public Object mapField(String string, Class clazz) {
@@ -15,7 +13,6 @@ public class IntegerFieldMapper implements FieldMapper {
 		} catch (NumberFormatException e) {
 			LOG.error("Could not convert " + string + " to int.", e);
 		}
-		return null;
+		return 0;
 	}
-
 }

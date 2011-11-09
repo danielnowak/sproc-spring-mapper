@@ -14,8 +14,10 @@ public class FieldMapperRegister {
 		FieldMapperRegister.register(Date.class, dateFieldMapper);
 		
 		FieldMapper integerMapper = new IntegerFieldMapper();
-		FieldMapperRegister.register(int.class, integerMapper);
 		FieldMapperRegister.register(Integer.class, integerMapper);
+		
+		FieldMapper intMapper = new IntFieldMapper();
+		FieldMapperRegister.register(int.class, intMapper);
 		
 		FieldMapper longMapper = new LongFieldMapper();
 		FieldMapperRegister.register(long.class, longMapper);
