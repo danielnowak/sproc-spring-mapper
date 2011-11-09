@@ -2,10 +2,10 @@ package com.typemapper.core.fieldMapper;
 
 import org.apache.log4j.Logger;
 
-public class LongFieldMapper implements FieldMapper {
-	
-	private static final Logger LOG = Logger.getLogger(LongFieldMapper.class);
+public class PrimitiveLongFieldMapper implements FieldMapper {
 
+	private static final Logger LOG = Logger.getLogger(PrimitiveLongFieldMapper.class);
+	
 	@Override
 	public Object mapField(String string, Class clazz) {
 		try {
@@ -13,8 +13,7 @@ public class LongFieldMapper implements FieldMapper {
 		} catch (NumberFormatException e) {
 			LOG.error("Could not convert " + string + " to long.");
 		}
-		return null;
+		return new Long(0);
 	}
-
 
 }

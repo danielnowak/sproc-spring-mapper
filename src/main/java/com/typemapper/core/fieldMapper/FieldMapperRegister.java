@@ -20,8 +20,10 @@ public class FieldMapperRegister {
 		FieldMapperRegister.register(int.class, intMapper);
 		
 		FieldMapper longMapper = new LongFieldMapper();
-		FieldMapperRegister.register(long.class, longMapper);
 		FieldMapperRegister.register(Long.class, longMapper);
+		
+		FieldMapper primitiveLongMapper = new PrimitiveLongFieldMapper();
+		FieldMapperRegister.register(long.class, primitiveLongMapper);
 		
 		FieldMapper charMapper = new CharFieldMapper();
 		FieldMapperRegister.register(char.class, charMapper);
