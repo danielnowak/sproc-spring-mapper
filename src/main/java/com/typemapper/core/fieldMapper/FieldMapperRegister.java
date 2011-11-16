@@ -54,7 +54,7 @@ public class FieldMapperRegister {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	static synchronized void register(Class clazz, FieldMapper mapper) {
+	private static void register(Class clazz, FieldMapper mapper) {
 		register.put(clazz, mapper);
 	}
 	@SuppressWarnings("rawtypes")
