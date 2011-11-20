@@ -48,7 +48,7 @@ public class FieldMapperRegister {
 		FieldMapperRegister.register(Boolean.class, booleanMapper);
 		FieldMapperRegister.register(boolean.class, booleanMapper);
 		
-		FieldMapper enumMapper = new EnumrationFieldMapper();
+		FieldMapper enumMapper = new EnumerationFieldMapper();
 		FieldMapperRegister.register(Enum.class, enumMapper);
 		
 	}

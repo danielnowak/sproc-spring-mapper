@@ -22,7 +22,7 @@ public class CollectionWithMemberInhertinaceTest extends AbstractTest {
 		final TypeMapper<ClassWithListMembersInheritance> mapper = TypeMapperFactory.createTypeMapper(ClassWithListMembersInheritance.class);
 		int i = 0;
 		while( rs.next() ) {
-			ClassWithListMembersInheritance result = (ClassWithListMembersInheritance) mapper.mapRow(rs, i++);
+			ClassWithListMembersInheritance result = mapper.mapRow(rs, i++);
 			Assert.assertNotNull(result);
 			Assert.assertNotNull(result.getArray());
 			Assert.assertTrue(result.getArray().size() == 2);

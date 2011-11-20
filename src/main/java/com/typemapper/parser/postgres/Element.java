@@ -28,10 +28,6 @@ public class Element implements Serializable {
 	     */
 	    @Override
 	    public String toString() {
-	        final StringBuilder builder = new StringBuilder();
-	        builder.append("Element [rowList=");
-	        builder.append(rowList);
-	        builder.append("]");
-	        return builder.toString();
+	        return String.format("Element [rowList=%s]", rowList);
 	    }
 }

@@ -25,7 +25,7 @@ public class ParseUtils {
 
 	public static final List<String> postgresArray2StringList(String value,
 			int appendStringSize) throws ArrayParserException {
-		if (!(value.startsWith("{") && value.endsWith("}")))
+		if (!(value.charAt(0) == '{' && value.charAt(value.length() -1) == '}'))
 			throw new ArrayParserException(
 					String
 							.format(
@@ -103,7 +103,7 @@ public class ParseUtils {
 
 	public static final List<String> postgresROW2StringList(String value,
 			int appendStringSize) throws RowParserException {
-		if (!(value.startsWith("(") && value.endsWith(")")))
+		if (!(value.charAt(0) == '(' && value.charAt(value.length() -1) == ')'))
 			throw new RowParserException(
 					"postgresROW2StringList() ROW must begin with '(' and ends with ')': "
 							+ value);
