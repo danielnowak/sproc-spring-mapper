@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+
 public class FieldMapperRegister {
 	
 	@SuppressWarnings({ "rawtypes"})
@@ -12,6 +14,8 @@ public class FieldMapperRegister {
 	static {
 		FieldMapper dateFieldMapper = new DateFieldMapper();
 		FieldMapperRegister.register(Date.class, dateFieldMapper);
+		FieldMapperRegister.register(java.sql.Date.class, dateFieldMapper);
+		FieldMapperRegister.register(DateTime.class, dateFieldMapper);
 		
 		FieldMapper integerMapper = new IntegerFieldMapper();
 		FieldMapperRegister.register(Integer.class, integerMapper);
