@@ -1,4 +1,4 @@
-package com.typemapper.core.fieldMapper;
+package com.typemapper.core;
 
 public abstract class ValueTransformer<Value, Bound> {
 

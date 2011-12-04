@@ -6,8 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.typemapper.core.ValueTransformer;
 import com.typemapper.core.fieldMapper.AnyTransformer;
-import com.typemapper.core.fieldMapper.ValueTransformer;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

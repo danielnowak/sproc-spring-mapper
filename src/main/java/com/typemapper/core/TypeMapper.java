@@ -30,7 +30,7 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	private final Class<ITEM> resultClass;
 	private final List<Mapping> mappings;
 	
-	TypeMapper(Class<ITEM> resultClass) {
+	TypeMapper(final Class<ITEM> resultClass) {
 		this.resultClass = resultClass;
 		mappings = Mapping.getMappingsForClass(this.resultClass);
 		@SuppressWarnings("rawtypes")
@@ -42,24 +42,24 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	}
 
 	@Override
-	public ITEM mapRow(ResultSet set, int count) throws SQLException {
+	public ITEM mapRow(final ResultSet set, final int count) throws SQLException {
 		ITEM result = null;
 		try {
 			
 			result = getResultClass().newInstance();
-			ResultTree resultTree = extractResultTree(set);
+			final ResultTree resultTree = extractResultTree(set);
 			fillObject(result, resultTree);
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			throw new SQLException(getResultClass() + " has not public no arch constructor", e);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			throw new SQLException(getResultClass() + " has not public no arch constructor", e);
 		}
 		return result;
 	}
 	
-	private ResultTree extractResultTree(ResultSet set) throws SQLException {
+	private ResultTree extractResultTree(final ResultSet set) throws SQLException {
 		LOG.debug("Extracting result tree");
-		ResultTree tree = new ResultTree();
+		final ResultTree tree = new ResultTree();
 		int i = 1;
 		while (true) {
 			String name = null;
@@ -68,24 +68,23 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 			try {
 				obj = set.getObject(i);
 				name = set.getMetaData().getColumnName(i);
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				LOG.debug("End of result set reached");
 				break;
 			}
 			if (obj instanceof PGobject && ((PGobject)obj).getType().equals("record")) {
- 				PGobject pgObj = (PGobject) obj;
-				DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
-//				List<String> fieldValues = ParseUtils.getArrayElements(pgObj.getValue());
+ 				final PGobject pgObj = (PGobject) obj;
+				final DbFunction function = DbFunctionRegister.getFunction(name, set.getStatement().getConnection());
 				List<String> fieldValues;
 				try {
 					fieldValues = ParseUtils.postgresROW2StringList(pgObj.getValue());
-				} catch (RowParserException e) {
+				} catch (final RowParserException e) {
 					throw new SQLException(e);
 				}
 
 				int j = 1;
-				for (String fieldValue : fieldValues) {
-					DbTypeField fieldDef = function.getFieldByPos(j);
+				for (final String fieldValue : fieldValues) {
+					final DbTypeField fieldDef = function.getFieldByPos(j);
 					DbResultNode currentNode = null;
 					if (fieldDef.getType().equals("USER-DEFINED")) {
 						currentNode = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), set.getStatement().getConnection());
@@ -100,12 +99,12 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 				i++;
 				continue;
 			} else if (obj instanceof PGobject) {
-				PGobject pgObj = (PGobject) obj;
+				final PGobject pgObj = (PGobject) obj;
 				node = new ObjectResultNode(pgObj.getValue(), name, pgObj.getType(), set.getStatement().getConnection());
 			} else if (obj instanceof Jdbc4Array) {
-				Jdbc4Array arrayObj = (Jdbc4Array) obj;
-				String typeName = arrayObj.getBaseTypeName();
-				String value = arrayObj.toString();
+				final Jdbc4Array arrayObj = (Jdbc4Array) obj;
+				final String typeName = arrayObj.getBaseTypeName();
+				final String value = arrayObj.toString();
 				node = new ArrayResultNode(name, value, typeName, set.getStatement().getConnection());
 			} else {
 				node = new SimpleResultNode(obj, name);
@@ -117,28 +116,28 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 		return tree;
 	}
 
-	private void fillObject(Object result, ResultTree tree) throws SQLException {
-		for (Mapping mapping :getMappings()) {
+	private void fillObject(final Object result, final ResultTree tree) throws SQLException {
+		for (final Mapping mapping :getMappings()) {
 			try {
-				DbResultNode node = tree.getChildByName(mapping.getName());
+				final DbResultNode node = tree.getChildByName(mapping.getName());
 				if (node == null) {
 					LOG.error("Could not map property with name " + mapping.getName());
 					continue;
 				}
 				if (DbResultNodeType.SIMPLE.equals(node.getNodeType())) {
-					String fieldStringValue = node.getValue();
-					Object value = mapping.getFieldMapper().mapField(fieldStringValue, mapping.getFieldClass());
+					final String fieldStringValue = node.getValue();
+					final Object value = mapping.getFieldMapper().mapField(fieldStringValue, mapping.getFieldClass());
 					mapping.map(result, value);
 					
 				} else if (DbResultNodeType.OBJECT.equals(node.getNodeType())) {
-					Object value = ObjectFieldMapper.mapField(mapping.getFieldClass(), (ObjectResultNode) node);
+					final Object value = ObjectFieldMapper.mapField(mapping.getFieldClass(), (ObjectResultNode) node);
 					mapping.map(result, value);
 					
 				} else if (DbResultNodeType.ARRAY.equals(node.getNodeType())) {
-					Object value = ArrayFieldMapper.mapField(mapping.getField(), (ArrayResultNode) node);
+					final Object value = ArrayFieldMapper.mapField(mapping.getField(), (ArrayResultNode) node);
 					mapping.map(result, value);
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOG.error(e, e);
 			}
 		}

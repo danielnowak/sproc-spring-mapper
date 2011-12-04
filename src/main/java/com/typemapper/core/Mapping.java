@@ -14,7 +14,6 @@ import com.typemapper.annotations.Embed;
 import com.typemapper.core.fieldMapper.AnyTransformer;
 import com.typemapper.core.fieldMapper.FieldMapper;
 import com.typemapper.core.fieldMapper.FieldMapperRegister;
-import com.typemapper.core.fieldMapper.ValueTransformer;
 import com.typemapper.core.fieldMapper.ValueTransformerFieldMapper;
 import com.typemapper.exception.NotsupportedTypeException;
 
