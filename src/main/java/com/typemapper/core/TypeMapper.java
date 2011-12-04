@@ -117,7 +117,7 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 	}
 
 	private void fillObject(final Object result, final ResultTree tree) throws SQLException {
-		for (final Mapping mapping :getMappings()) {
+		for (final Mapping mapping : getMappings()) {
 			try {
 				final DbResultNode node = tree.getChildByName(mapping.getName());
 				if (node == null) {

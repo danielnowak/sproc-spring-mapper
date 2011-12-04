@@ -21,7 +21,7 @@ import com.typemapper.exception.NotsupportedTypeException;
 public class Mapping {
 	
 	private final String name;
-	private final Class<? extends ValueTransformer<String, ?>> valueTransformer;
+	private final Class<? extends ValueTransformer<?, ?>> valueTransformer;
 	private final Field field;
 	private final boolean embed;
 	private final Field embedField;
@@ -68,7 +68,7 @@ public class Mapping {
 	}
 	
 	Mapping(final Field field, final String name, final boolean embed, final Field embedField,
-	        final Class<? extends ValueTransformer<String, ?>> valueTransformer) {
+	        final Class<? extends ValueTransformer<?, ?>> valueTransformer) {
 		this.name = name;
 		this.field = field;
 		this.embed = embed;
@@ -81,7 +81,7 @@ public class Mapping {
 		return field.getType();
 	}
 	
-	public Class<? extends ValueTransformer<String, ?>> getValueTransformer() {
+	public Class<? extends ValueTransformer<?, ?>> getValueTransformer() {
         return valueTransformer;
     }
 
@@ -129,16 +129,20 @@ public class Mapping {
 		return field;
 	}	
 	
+	private DatabaseField getAnnotation() {
+	    return field.getAnnotation(DatabaseField.class);
+	}
+	
 	public FieldMapper getFieldMapper() throws NotsupportedTypeException, InstantiationException,
 	    IllegalAccessException {
-		FieldMapper mapper = FieldMapperRegister.getMapperForClass(getFieldClass());
+	    if (getAnnotation() != null && getAnnotation().transformer() != null) {
+	        if (!AnyTransformer.class.equals(getValueTransformer())) {
+	            return new ValueTransformerFieldMapper(getValueTransformer());
+	        }
+        }
+	    final FieldMapper mapper = FieldMapperRegister.getMapperForClass(getFieldClass());
 		if (mapper == null) {
-		    if (!AnyTransformer.class.equals(getValueTransformer())) {
-                mapper = new ValueTransformerFieldMapper(getValueTransformer());
-            }
-		    if (mapper == null) {
-		        throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
-            }
+	        throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
 		}
 		return mapper;
 	}

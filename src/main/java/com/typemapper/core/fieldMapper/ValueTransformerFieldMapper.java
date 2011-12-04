@@ -4,9 +4,9 @@ import com.typemapper.core.ValueTransformer;
 
 public class ValueTransformerFieldMapper implements FieldMapper {
 
-    private final ValueTransformer<String, ?> valueTransformer;
+    private final ValueTransformer<?, ?> valueTransformer;
     
-    public ValueTransformerFieldMapper(final Class<? extends ValueTransformer<String, ?>> valueTransformer)
+    public ValueTransformerFieldMapper(final Class<? extends ValueTransformer<?, ?>> valueTransformer)
             throws InstantiationException, IllegalAccessException {
         this.valueTransformer = valueTransformer.newInstance();
     }

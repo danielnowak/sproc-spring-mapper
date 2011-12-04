@@ -15,5 +15,5 @@ import com.typemapper.core.fieldMapper.AnyTransformer;
 public @interface DatabaseField {
 	
 	String name() default "";
-	Class<? extends ValueTransformer<String, ?>> transformer() default AnyTransformer.class;
+	Class<? extends ValueTransformer<?, ?>> transformer() default AnyTransformer.class;
 }
