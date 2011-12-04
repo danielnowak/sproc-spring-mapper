@@ -1,4 +1,4 @@
-package com.typemapper.sproctest.result;
+package com.typemapper.namedresult.results;
 
 public enum GenderCode {
     
