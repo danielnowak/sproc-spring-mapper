@@ -23,16 +23,18 @@ public class ArrayResultNode implements DbResultNode {
 		this.typeDef = DbTypeRegister.getDbType(typeName, connection);
 		this.children = new ArrayList<DbResultNode>();
 		List<String> elements;
-		try {
-			elements = ParseUtils.postgresArray2StringList(value);
-		} catch (ArrayParserException e) {
-			throw new SQLException(e);
-		}
-		for (String element : elements) {
-			if (typeDef != null) {
-				children.add(new ObjectResultNode(element, "", typeName, connection));
-			} else {
-				children.add(new SimpleResultNode(element, ""));
+		if (value != null) {
+			try {
+				elements = ParseUtils.postgresArray2StringList(value);
+			} catch (ArrayParserException e) {
+				throw new SQLException(e);
+			}
+			for (String element : elements) {
+				if (typeDef != null) {
+					children.add(new ObjectResultNode(element, "", typeName, connection));
+				} else {
+					children.add(new SimpleResultNode(element, ""));
+				}
 			}
 		}
 	}

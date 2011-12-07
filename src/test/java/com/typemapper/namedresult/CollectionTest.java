@@ -103,5 +103,21 @@ public class CollectionTest extends AbstractTest {
 		}
 	}
 	
+	@Test
+	public void testObjectWithEmptyList() throws Exception {
+		final PreparedStatement ps = connection.prepareStatement("SELECT ROW(ARRAY[]::tmp.simple_type[], 'str')::tmp.array_type as obj, 'str' as str ");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObjectWithArray.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithObjectWithArray result = (ClassWithObjectWithArray) mapper.mapRow(rs, i++);
+			Assert.assertNotNull(result);
+			Assert.assertEquals("str", result.getStr());
+			Assert.assertNotNull(result.getObj());
+			Assert.assertEquals("str", result.getObj().getStr());
+			Assert.assertNotNull(result.getObj().getArray());
+			Assert.assertEquals(0, result.getObj().getArray().size());}
+	}	
+	
 	
 }
