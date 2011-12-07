@@ -11,21 +11,24 @@ import java.util.Map;
 
 import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.Embed;
+import com.typemapper.core.fieldMapper.AnyTransformer;
 import com.typemapper.core.fieldMapper.FieldMapper;
 import com.typemapper.core.fieldMapper.FieldMapperRegister;
+import com.typemapper.core.fieldMapper.ValueTransformerFieldMapper;
 import com.typemapper.exception.NotsupportedTypeException;
 
 
 public class Mapping {
 	
 	private final String name;
+	private final Class<? extends ValueTransformer<?, ?>> valueTransformer;
 	private final Field field;
-	private boolean embed;
-	private Field embedField;
+	private final boolean embed;
+	private final Field embedField;
 	@SuppressWarnings("rawtypes")
 	private static final Map<Class,List<Mapping>> cache = new HashMap<Class, List<Mapping>>(); 
 	
-	public static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") Class clazz) {
+	public static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") final Class clazz) {
 		List<Mapping> result = cache.get(clazz);
 		if (result == null) {
 			result = getMappingsForClass(clazz, false, null);
@@ -35,27 +38,27 @@ public class Mapping {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	static List<Mapping> getMappingsForClass( Class clazz, boolean embed, Field embedField) {
-		List<Mapping> result = new ArrayList<Mapping>();
-		List<Field> fields = new LinkedList<Field>();
-		for (Field field : clazz.getDeclaredFields()) {
+	static List<Mapping> getMappingsForClass( final Class clazz, final boolean embed, final Field embedField) {
+		final List<Mapping> result = new ArrayList<Mapping>();
+		final List<Field> fields = new LinkedList<Field>();
+		for (final Field field : clazz.getDeclaredFields()) {
 			fields.add(field);
 		}		
 		Class parentClass = clazz.getSuperclass();
 		while (parentClass != null) {
-			for (Field field : parentClass.getDeclaredFields()) {
+			for (final Field field : parentClass.getDeclaredFields()) {
 				fields.add(field);
 			}
 			parentClass = parentClass.getSuperclass();
 		}
 		
 		for (final Field field : fields) {
-			DatabaseField annotation = field.getAnnotation(DatabaseField.class);
+			final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
 			if (annotation != null) {
-				result.add(new Mapping(field, annotation.name(), embed, embedField));
+				result.add(new Mapping(field, annotation.name(), embed, embedField, annotation.transformer()));
 			}
 			if (!embed) {
-				Embed embedAnnotation = field.getAnnotation(Embed.class);
+				final Embed embedAnnotation = field.getAnnotation(Embed.class);
 				if (embedAnnotation != null) {
 					result.addAll(getMappingsForClass(field.getType(), true, field));
 				}
@@ -64,11 +67,13 @@ public class Mapping {
 		return result;
 	}
 	
-	Mapping(Field field, String name, boolean embed, final Field embedField) {
+	Mapping(final Field field, final String name, final boolean embed, final Field embedField,
+	        final Class<? extends ValueTransformer<?, ?>> valueTransformer) {
 		this.name = name;
 		this.field = field;
 		this.embed = embed;
 		this.embedField = embedField;
+		this.valueTransformer = valueTransformer;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -76,11 +81,15 @@ public class Mapping {
 		return field.getType();
 	}
 	
-	public Method getSetter(Field field) {
+	public Class<? extends ValueTransformer<?, ?>> getValueTransformer() {
+        return valueTransformer;
+    }
+
+    public Method getSetter(final Field field) {
 		final String setterName = "set" + capitalize( field.getName() );
 		try {
 			return field.getDeclaringClass().getDeclaredMethod(setterName, field.getType());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return null;
 		}
 	}
@@ -89,11 +98,11 @@ public class Mapping {
 		return getSetter(field);
 	}
 	
-	public Method getGetter(Field field) {
+	public Method getGetter(final Field field) {
 		final String getterName = "get" + capitalize( field.getName() );
 		try {
 			return field.getDeclaringClass().getDeclaredMethod(getterName);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return null;
 		}
 
@@ -103,14 +112,14 @@ public class Mapping {
 		return name;
 	}
 	
-	private static final String capitalize(String name) {
+	private static final String capitalize(final String name) {
 		if (name == null || name.length() == 0) {
 			return name;
 		}
 		if (Character.isUpperCase(name.charAt(0))){
 			return name;
 		}
-		char chars[] = name.toCharArray();
+		final char chars[] = name.toCharArray();
 		chars[0] = Character.toUpperCase(chars[0]);
 		return new String(chars);
 		
@@ -120,29 +129,39 @@ public class Mapping {
 		return field;
 	}	
 	
-	public FieldMapper getFieldMapper() throws NotsupportedTypeException {
-		FieldMapper mapper = FieldMapperRegister.getMapperForClass(getFieldClass());
+	private DatabaseField getAnnotation() {
+	    return field.getAnnotation(DatabaseField.class);
+	}
+	
+	public FieldMapper getFieldMapper() throws NotsupportedTypeException, InstantiationException,
+	    IllegalAccessException {
+	    if (getAnnotation() != null && getAnnotation().transformer() != null) {
+	        if (!AnyTransformer.class.equals(getValueTransformer())) {
+	            return new ValueTransformerFieldMapper(getValueTransformer());
+	        }
+        }
+	    final FieldMapper mapper = FieldMapperRegister.getMapperForClass(getFieldClass());
 		if (mapper == null) {
-			throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
-		} else {
-			return mapper;
+	        throw new NotsupportedTypeException("Could not find mapper for type " + getFieldClass());
 		}
+		return mapper;
 	}
 
-	public void map(Object target, Object value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
+	public void map(final Object target, final Object value) throws IllegalArgumentException, IllegalAccessException,
+	    InvocationTargetException, InstantiationException {
 		if (embed) {
 			Object embedValue = getEmbedFieldValue(target);
 			if (embedValue == null) {
 				embedValue = initEmbed(target);
 			}
-			Method setter = getSetter(); 
+			final Method setter = getSetter(); 
 			if (setter != null) {
 				setter.invoke(embedValue, value);
 			} else {
 				getField().set(embedValue, value);
 			}
 		} else {
-			Method setter = getSetter(); 
+			final Method setter = getSetter(); 
 			if (setter != null) {
 				setter.invoke(target, value);
 			} else {
@@ -152,10 +171,10 @@ public class Mapping {
 		}
 	}
 
-	private Object initEmbed(Object target) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private Object initEmbed(final Object target) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		
-		Method setter = getSetter(embedField); 
-		Object value = embedField.getType().newInstance();
+		final Method setter = getSetter(embedField); 
+		final Object value = embedField.getType().newInstance();
 		if (setter != null) {
 			setter.invoke(target, value);
 		} else {
@@ -165,8 +184,8 @@ public class Mapping {
 		
 	}
 
-	private Object getEmbedFieldValue(Object target) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Method setter = getGetter(embedField);
+	private Object getEmbedFieldValue(final Object target) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		final Method setter = getGetter(embedField);
 		Object result = null;
 		if (setter != null) {
 			result = setter.invoke(target);
