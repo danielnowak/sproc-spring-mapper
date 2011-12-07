@@ -2,9 +2,9 @@ package com.typemapper.core.fieldMapper;
 
 import org.apache.log4j.Logger;
 
-public class EnumrationFieldMapper implements FieldMapper {
+public class EnumerationFieldMapper implements FieldMapper {
 	
-	private static final Logger LOG = Logger.getLogger(EnumrationFieldMapper.class); 
+	private static final Logger LOG = Logger.getLogger(EnumerationFieldMapper.class); 
 
 	@SuppressWarnings("rawtypes")
 	@Override

@@ -11,7 +11,7 @@ public class DbTypeField {
 		this.name = new String(fieldName);
 		this.position = fieldPosition;
 		this.type = new String(fieldType);
-		this.typeName = new String(fieldTypeName);
+		this.typeName = String.valueOf(fieldTypeName);
 	}
 	public String getName() {
 		return name;

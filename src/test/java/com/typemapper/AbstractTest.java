@@ -90,7 +90,9 @@ connection.prepareStatement(primitive_sproc_2).execute();
 	@After
 	public void tearDown() throws SQLException {
 		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp CASCADE;").execute();
+		if (connection != null) {
+			connection.close();
+		}
 	}
-	
 
 }

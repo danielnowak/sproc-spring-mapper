@@ -2,9 +2,11 @@ package com.typemapper.namedresult;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,6 +20,14 @@ import com.typemapper.namedresult.results.ClassWithSet;
 
 public class CollectionTest extends AbstractTest {
 
+	private PreparedStatement ps;
+	
+	@After
+	public void tearDown() throws SQLException {
+		if (ps != null) {
+			ps.close();
+		}
+	}
 	
 	@Test
 	public void testSimpleList() throws Exception {

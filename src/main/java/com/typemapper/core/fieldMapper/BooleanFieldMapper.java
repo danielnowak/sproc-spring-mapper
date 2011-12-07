@@ -1,7 +1,5 @@
 package com.typemapper.core.fieldMapper;
 
-import java.sql.SQLException;
-
 import org.apache.log4j.Logger;
 
 import com.typemapper.parser.exception.ParserException;
@@ -16,7 +14,7 @@ public class BooleanFieldMapper implements FieldMapper {
 		try {
 			return ParseUtils.getBoolean(string);
 		} catch (ParserException e) {
-			LOG.error("Could not convert " + string + " to Boolean.");
+			LOG.error(String.format("Could not convert [%s] to Boolean.", string), e);
 			return null;
 		}
 	}

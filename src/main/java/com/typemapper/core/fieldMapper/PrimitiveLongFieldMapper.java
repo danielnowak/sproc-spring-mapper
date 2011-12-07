@@ -11,9 +11,9 @@ public class PrimitiveLongFieldMapper implements FieldMapper {
 		try {
 			return Long.parseLong(string);
 		} catch (NumberFormatException e) {
-			LOG.error("Could not convert " + string + " to long.");
+			LOG.error(String.format("Could not convert [%s] to long.", string), e);
 		}
-		return new Long(0);
+		return Long.valueOf(0);
 	}
 
 }
