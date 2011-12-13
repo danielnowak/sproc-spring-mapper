@@ -1,5 +1,6 @@
 package com.typemapper.namedresult;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import com.typemapper.AbstractTest;
 import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
+import com.typemapper.namedresult.results.ClassWithBigDecimal;
 import com.typemapper.namedresult.results.ClassWithEmbed;
 import com.typemapper.namedresult.results.ClassWithPrimitives;
 
@@ -45,6 +47,18 @@ public class PrimitiveTest extends AbstractTest {
 			Assert.assertEquals('c', result.getPrimitives().getC());
 			Assert.assertEquals("str", result.getStr());
 		}
-	}	
+	}
+	
+	@Test
+	public void testPrimitiveBigDecimalMapper() throws SQLException {
+		final PreparedStatement ps = connection.prepareStatement("SELECT 1 as i");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithBigDecimal.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithBigDecimal result = (ClassWithBigDecimal) mapper.mapRow(rs, i++);
+			Assert.assertEquals(new BigDecimal(1), result.getI());
+		}
+	}		
 
 }

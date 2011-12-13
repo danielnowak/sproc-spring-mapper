@@ -1,5 +1,6 @@
 package com.typemapper.core.fieldMapper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,9 @@ public class FieldMapperRegister {
 		
 		final FieldMapper enumMapper = new EnumrationFieldMapper();
 		FieldMapperRegister.register(Enum.class, enumMapper);
+
+		final FieldMapper bigDecimalMapper = new BigDecimalFieldMappper();
+		FieldMapperRegister.register(BigDecimal.class, bigDecimalMapper);
 	}
 	
 	@SuppressWarnings("rawtypes")
