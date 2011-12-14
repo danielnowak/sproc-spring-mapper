@@ -13,7 +13,7 @@ public class DbFunctionRegister {
 	
 	private Map<String, DbFunction> functions = null;
 	private Map<String, List<String>> functionNameToFQName = null;
-	private static DbFunctionRegister register;
+	private static Map<String, DbFunctionRegister> registers;
 	private String searchPath = null;
 	
 	
@@ -80,26 +80,36 @@ public class DbFunctionRegister {
 	}
 
 	public static final DbFunction getFunction(String name, Connection connection) throws SQLException {
-		if (register == null) {
-			initRegistry(connection);
+		if (registers == null) {
+			initRegistry(connection, "default");
 		}
-		List<String> list = register.functionNameToFQName.get(name);
-		if (list.size() == 1) {
-			return register.functions.get(list.get(0)); 
-		} else {
-			String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-			return register.functions.get(fqName);
+		for (DbFunctionRegister register : registers.values()) {
+			List<String> list = register.functionNameToFQName.get(name);
+			if (list.size() == 1) {
+				return register.functions.get(list.get(0)); 
+			} else {
+				String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+				DbFunction function = register.functions.get(fqName);
+				if (function != null) {
+					return function;
+				}
+			}
 		}
+		return null;
 	}
 	
 	public static void reInitRegistry(Connection connection) throws SQLException {
-		register = new DbFunctionRegister(connection);
+		registers.put("default", new DbFunctionRegister(connection));
 	}
 
-	private static synchronized void initRegistry(Connection connection) throws SQLException {
-		if (register == null) {
-			register = new DbFunctionRegister(connection);
+	public static synchronized void initRegistry(Connection connection, final String name) throws SQLException {
+		if (registers == null) {
+			registers = new HashMap<String, DbFunctionRegister>();
 		}
+		if (!registers.containsKey(name)) {
+			registers.put(name, new DbFunctionRegister(connection));
+		}
+		
 	}
 
 }

@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class DbTypeRegister {
 	
-	private static DbTypeRegister register = null; 
+	private static Map<String,DbTypeRegister> registers = null; 
 	
 	private Map<String, DbType> types = null;
 	private Map<String, List<String>> typeNameToFQN = null;
@@ -75,30 +75,41 @@ public class DbTypeRegister {
 	}
 
 	public static DbType getDbType(String name, Connection connection) throws SQLException {
-		if (register == null) {
-			initRegister(connection);
+		if (registers == null) {
+			initRegistry("default", connection);
 		}
-		List<String> list = register.typeNameToFQN.get(name);
-		if (list != null) {
-			if (list.size() == 1) {
-				return register.types.get(list.get(0));
-			} else {
-				String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-				return register.types.get(fqName);
-			}
-		} else {
-			return null;
+		for (DbTypeRegister register : registers.values()) {
+			List<String> list = register.typeNameToFQN.get(name);
+			if (list != null) {
+				if (list.size() == 1) {
+					return register.types.get(list.get(0));
+				} else {
+					String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+					DbType result = register.types.get(fqName);
+					if (result != null) {
+						return result;
+					}
+				}
+			} 
 		}
+		return null;
 	}
 
-	private static synchronized void initRegister(Connection connection) throws SQLException {
-		if (register == null) {
-			register = new DbTypeRegister(connection);
+	public static synchronized void initRegistry(final String name, Connection connection) throws SQLException {
+		if (registers == null) {
+			registers = new HashMap<String, DbTypeRegister>();
 		}
+		if (!registers.containsKey(name)) {
+			registers.put(name, new DbTypeRegister(connection));
+		}
+
 	}
 	
 	public static void reInitRegister(Connection connection) throws SQLException {
-		register = new DbTypeRegister(connection);
+		if (registers == null) {
+			registers = new HashMap<String, DbTypeRegister>();
+		}
+		registers.put("default", new DbTypeRegister(connection));
 	}
 
 }

@@ -19,6 +19,7 @@ public class ObjectTest extends AbstractTest {
 
 	@Test
 	public void testPrimitiveMappings() throws SQLException {
+		TypeMapperFactory.initTypeAndFunctionCaches(connection, "default");
 		final PreparedStatement ps = connection.prepareStatement("SELECT 'str' as str, ROW(1,2,'c')::tmp.simple_type as obj");
 		final ResultSet rs = ps.executeQuery();
 		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObject.class);

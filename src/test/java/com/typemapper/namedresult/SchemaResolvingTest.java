@@ -12,7 +12,6 @@ import com.typemapper.core.TypeMapper;
 import com.typemapper.core.TypeMapperFactory;
 import com.typemapper.core.db.DbTypeRegister;
 import com.typemapper.namedresult.results.ClassWithObject2;
-import com.typemapper.namedresult.results.ClassWithPrimitives2;
 
 public class SchemaResolvingTest extends AbstractTest {
 	

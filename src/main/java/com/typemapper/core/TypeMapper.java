@@ -142,6 +142,8 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 			}
 		}
 	}
+	
+	
 
 	public Class<ITEM> getResultClass() {
 		return resultClass;
