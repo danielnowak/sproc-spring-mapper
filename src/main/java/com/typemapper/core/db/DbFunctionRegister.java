@@ -61,7 +61,9 @@ public class DbFunctionRegister {
 			function = new DbFunction(functionSchema, functionName);
 			addFunction(function);
 		}
-		function.addOutParam(new DbTypeField(paramName, paramPosition, paramType, paramTypeName));
+		if (paramName != null) {
+			function.addOutParam(new DbTypeField(paramName, paramPosition, paramType, paramTypeName));
+		}
 	}
 	
 	private void addFunction(DbFunction function) {
@@ -89,9 +91,11 @@ public class DbFunctionRegister {
 				return register.functions.get(list.get(0)); 
 			} else {
 				String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-				DbFunction function = register.functions.get(fqName);
-				if (function != null) {
-					return function;
+				if (fqName != null) {
+					DbFunction function = register.functions.get(fqName);
+					if (function != null) {
+						return function;
+					}
 				}
 			}
 		}

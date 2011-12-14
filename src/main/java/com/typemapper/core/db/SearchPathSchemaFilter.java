@@ -17,7 +17,7 @@ public class SearchPathSchemaFilter {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Could not find schema in search_path: " + searchPath + " Names: " + names);
+		return null;
 	}
 	
 	private static final String extractSchemaName(final String fqName) {

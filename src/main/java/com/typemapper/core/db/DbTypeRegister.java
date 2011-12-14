@@ -85,9 +85,11 @@ public class DbTypeRegister {
 					return register.types.get(list.get(0));
 				} else {
 					String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-					DbType result = register.types.get(fqName);
-					if (result != null) {
-						return result;
+					if (fqName != null) {
+						DbType result = register.types.get(fqName);
+						if (result != null) {
+							return result;
+						}
 					}
 				}
 			} 
