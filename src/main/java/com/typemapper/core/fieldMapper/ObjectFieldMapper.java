@@ -17,6 +17,9 @@ public class ObjectFieldMapper {
 	private static final Logger LOG = Logger.getLogger(ObjectFieldMapper.class);
 	
 	public final static Object mapField(@SuppressWarnings("rawtypes") Class clazz, ObjectResultNode node) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NotsupportedTypeException {
+		if (node.getChildren() == null) {
+			return null;
+		}
 		List<Mapping> mappings = Mapping.getMappingsForClass(clazz);
 		Object result = clazz.newInstance();
 		

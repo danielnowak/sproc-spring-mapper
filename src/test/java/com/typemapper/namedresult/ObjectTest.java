@@ -70,6 +70,21 @@ public class ObjectTest extends AbstractTest {
 		}
 		
 	}
-	
+
+	@Test
+	public void testNullObjectInObject() throws SQLException {
+		final PreparedStatement ps = connection.prepareStatement("SELECT 'str' as str, ROW(null,'str')::tmp.complex_type as obj");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObjectWithObject.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithObjectWithObject result = (ClassWithObjectWithObject) mapper.mapRow(rs, i++);
+			Assert.assertEquals("str", result.getStr());
+			Assert.assertNotNull(result.getWithObj());
+			Assert.assertEquals("str", result.getWithObj().getStr());
+			Assert.assertNull(result.getWithObj().getPrimitives());
+		}
+		
+	}
 
 }

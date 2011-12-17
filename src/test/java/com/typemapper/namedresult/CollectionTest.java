@@ -15,6 +15,7 @@ import com.typemapper.namedresult.results.ClassWithList;
 import com.typemapper.namedresult.results.ClassWithObjectWithArray;
 import com.typemapper.namedresult.results.ClassWithPrimitives;
 import com.typemapper.namedresult.results.ClassWithSet;
+import com.typemapper.namedresult.results.ObjectWithArray;
 
 public class CollectionTest extends AbstractTest {
 
@@ -119,5 +120,35 @@ public class CollectionTest extends AbstractTest {
 			Assert.assertEquals(0, result.getObj().getArray().size());}
 	}	
 	
+	@Test
+	public void testObjectWithNullList() throws Exception {
+		final PreparedStatement ps = connection.prepareStatement("SELECT null as arr, 'str' as str ");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ObjectWithArray.class);
+		int i = 0;
+		while( rs.next() ) {
+			ObjectWithArray result = (ObjectWithArray) mapper.mapRow(rs, i++);
+			Assert.assertNotNull(result);
+			Assert.assertEquals("str", result.getStr());
+			Assert.assertNull(result.getArray());
+		}
+	}	
+	
+	@Test
+	public void testObjectWithObjectNullList() throws Exception {
+		final PreparedStatement ps = connection.prepareStatement("SELECT ROW(null, 'str')::tmp.array_type as obj, 'str' as str ");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObjectWithArray.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithObjectWithArray result = (ClassWithObjectWithArray) mapper.mapRow(rs, i++);
+			Assert.assertNotNull(result);
+			Assert.assertEquals("str", result.getStr());
+			Assert.assertNotNull(result.getObj());
+			Assert.assertEquals("str", result.getObj().getStr());
+			Assert.assertNotNull(result.getObj().getArray());
+			Assert.assertEquals(0, result.getObj().getArray().size());
+		}
+	}	
 	
 }

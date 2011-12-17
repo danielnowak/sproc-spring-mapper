@@ -27,6 +27,10 @@ public class ObjectResultNode implements DbResultNode {
 		this.children = new ArrayList<DbResultNode>();
 		this.name = name;
 		List<String> values;
+		if (value == null) {
+			children = null;
+			return;
+		}
 		try {
 			values = ParseUtils.postgresROW2StringList(value);
 		} catch (RowParserException e) {

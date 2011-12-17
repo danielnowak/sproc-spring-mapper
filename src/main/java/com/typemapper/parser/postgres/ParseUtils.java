@@ -119,7 +119,7 @@ public class ParseUtils {
 		while (c[i] != ')') {
 			if (c[i] == ',') {
 				char nextChar = c[i + 1];
-				if (nextChar == ',' || nextChar == ')') {
+				if (nextChar == ',' || nextChar == ')' || c[i - 1] == '(') {
 					// we have an empty position, that is we have a NULL value
 					result.add(null);
 				}
