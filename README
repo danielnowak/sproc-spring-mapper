@@ -1,0 +1,50 @@
+TypeMapper
+----------
+
+Introduction
+------------
+
+The TypeMapper is a small Java OR-Mapper for the Postgres Databases.
+Other then other OR-Mappers it supports postgres database types, which are in general serialiazed to (field1,field2),
+and arrays. It is designed as an extention to the spring dao package and it implements the interface ParameterizedRowMapper,
+which is part of the spring framework.
+
+Usage
+-----
+
+public class Obj {
+
+    @DatabaseField(name="field")
+    public int i;
+}
+
+TypeMapperFactory.createTypeMapper(Obj.class);
+
+
+ValueTransformer
+----------------
+
+Sometimes a value cannot be translated 1:1 to a Java Object, for example enums.
+For this case the TypeMapper has ValueTransformers, wchich are executed before the value is set.
+
+public class Obj {
+
+    @DatabaseField(name="field", transformer=MyEnumTransformer.class)
+    public MyEnum e;
+}
+
+public class GenderCodeTransformer extends ValueTransformer<String, MyEnum> {
+
+    @Override
+    public MyEnum transform(final String string) {
+        return MyEnum.fromCode(string);
+    }
+
+}
+
+Further informations
+-------------------
+
+Have a look into the tests
+
+
