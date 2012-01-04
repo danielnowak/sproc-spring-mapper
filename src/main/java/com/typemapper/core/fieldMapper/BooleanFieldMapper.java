@@ -13,6 +13,9 @@ public class BooleanFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
 		try {
 			return ParseUtils.getBoolean(string);
 		} catch (ParserException e) {

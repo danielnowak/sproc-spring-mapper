@@ -8,6 +8,9 @@ public class IntFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return 0;
+		}
 		try {
 			return Integer.parseInt(string);
 		} catch (NumberFormatException e) {

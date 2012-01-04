@@ -92,5 +92,31 @@ public class PrimitiveTest extends AbstractTest {
 			Assert.assertEquals(new BigDecimal(1), result.getI());
 		}
 	}		
+	
+	@Test
+	public void testNullString() throws Exception {
+
+		final PreparedStatement ps = connection.prepareStatement("SELECT null as str");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithEmbed.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithEmbed result = (ClassWithEmbed) mapper.mapRow(rs, i++);
+			Assert.assertNull(result.getStr());
+		}
+	}
+	
+	@Test
+	public void testEmptyString() throws Exception {
+
+		final PreparedStatement ps = connection.prepareStatement("SELECT '' as str");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithEmbed.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithEmbed result = (ClassWithEmbed) mapper.mapRow(rs, i++);
+			Assert.assertEquals("", result.getStr());
+		}
+	}	
 
 }

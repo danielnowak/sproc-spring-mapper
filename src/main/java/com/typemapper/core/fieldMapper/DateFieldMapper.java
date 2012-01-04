@@ -15,6 +15,10 @@ public class DateFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
+
 		Date result = null;
 		for (final String format : FORMATS) {
 			try {

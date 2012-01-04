@@ -8,6 +8,9 @@ public class CharFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
 		if (string.length() == 1) {
 			return string.charAt(0);
 		} else {
