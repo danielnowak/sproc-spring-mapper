@@ -10,7 +10,7 @@ public class SimpleResultNode implements DbResultNode {
 
 	public SimpleResultNode(Object obj, String name) {
 		if (obj == null ) {
-			this.value = "";	
+			this.value = null;	
 		} else {
 			this.value = obj.toString();
 		}

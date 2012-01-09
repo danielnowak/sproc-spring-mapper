@@ -8,6 +8,10 @@ public class ShortFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
+
 		try {
 			return Short.parseShort(string);
 		} catch (NumberFormatException e) {

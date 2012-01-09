@@ -28,6 +28,9 @@ public class AbstractTest {
 		connection.prepareStatement("CREATE SCHEMA tmp;").execute();
 		connection.prepareStatement("CREATE SCHEMA tmp2;").execute();
 		connection.prepareStatement("set search_path to tmp,tmp2;").execute();
+		connection.prepareStatement("CREATE DOMAIN tmp.gender AS char;").execute();
+		connection.prepareStatement("CREATE TYPE tmp.type_with_domain AS (g tmp.gender)").execute();
+		
 		connection.prepareStatement("CREATE TYPE tmp.simple_type AS (i int, l int, c varchar);").execute();
 		connection.prepareStatement("CREATE TYPE tmp2.simple_type AS (i int, l int, c varchar, h varchar);").execute();
 		connection.prepareStatement("CREATE TYPE tmp.simple_type_for_embed AS (i int, l int, c varchar, str varchar);").execute();
@@ -44,9 +47,22 @@ public class AbstractTest {
 										"msg := 'result_code'; " +
 										"RETURN; " +
 									"END " + 
-" $BODY$ " +
-" LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+									" $BODY$ " +
+									" LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+		
 		connection.prepareStatement(primitive_sproc).execute();
+		
+		String sproc_with_null_result = "CREATE OR REPLACE FUNCTION tmp.primitives_with_null_function(OUT id smallint, OUT msg text) " +
+		"RETURNS record AS " +
+		"$BODY$ " + 
+		"DECLARE " +  
+		"BEGIN " + 
+			"id  := 0; " + 
+			"RETURN; " +
+		"END " + 
+		" $BODY$ " +
+		" LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";		
+		connection.prepareStatement(sproc_with_null_result).execute();
 		
 		String primitive_sproc_2 = 	"CREATE OR REPLACE FUNCTION tmp2.primitives_function(OUT id smallint, OUT msg text, OUT msg2 text) " +
 		"RETURNS record AS " +

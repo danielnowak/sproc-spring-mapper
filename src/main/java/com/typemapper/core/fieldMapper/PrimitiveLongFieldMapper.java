@@ -8,6 +8,10 @@ public class PrimitiveLongFieldMapper implements FieldMapper {
 	
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return new Long(0);
+		}
+
 		try {
 			return Long.parseLong(string);
 		} catch (NumberFormatException e) {

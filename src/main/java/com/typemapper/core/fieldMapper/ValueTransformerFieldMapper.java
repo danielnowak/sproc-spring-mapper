@@ -13,6 +13,9 @@ public class ValueTransformerFieldMapper implements FieldMapper {
 
     @Override
     public Object mapField(final String string, final Class clazz) {
+		if (string == null) {
+			return null;
+		}
         if (valueTransformer != null) {
             return valueTransformer.transform(string);
         }

@@ -10,6 +10,10 @@ public class IntegerFieldMapper implements FieldMapper {
 
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
+
 		try {
 			return Integer.parseInt(string);
 		} catch (NumberFormatException e) {

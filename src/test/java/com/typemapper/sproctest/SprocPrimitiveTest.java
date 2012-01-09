@@ -34,6 +34,20 @@ public class SprocPrimitiveTest extends AbstractTest {
 	}
 	
 	@Test
+	public void testPrimitivesWithNullString() throws SQLException {
+		connection.createStatement().execute("set search_path to tmp,tmp2");
+		final PreparedStatement ps = connection.prepareStatement("SELECT tmp.primitives_with_null_function();");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(PrimitiveResult.class);
+		int i = 0;
+		while( rs.next() ) {
+			PrimitiveResult result = (PrimitiveResult) mapper.mapRow(rs, i++);
+			Assert.assertEquals(0, result.getId().intValue());
+			Assert.assertNull(result.getMsg());
+		}
+	}	
+	
+	@Test
 	public void testPrimitivesWithSearchPath() throws SQLException {
 		connection.createStatement().execute("set search_path to tmp2,tmp");
 		DbFunctionRegister.reInitRegistry(connection);

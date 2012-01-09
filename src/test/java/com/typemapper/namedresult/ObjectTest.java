@@ -86,5 +86,34 @@ public class ObjectTest extends AbstractTest {
 		}
 		
 	}
+	
+	@Test
+	public void testObjectStringMappingWithNullString() throws SQLException {
+		//SELECT 1 as i, 2 as l, 'c' as c, 'str' as str
+		final PreparedStatement ps = connection.prepareStatement("SELECT ROW(1,2,'c', null)::tmp.simple_type_for_embed as obj");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObjectWithEmbed.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithObjectWithEmbed result = (ClassWithObjectWithEmbed) mapper.mapRow(rs, i++);
+			Assert.assertNotNull(result.getClassWithEmbed());
+			Assert.assertNull(result.getClassWithEmbed().getStr());
+		}
+	}
+
+	@Test
+	public void testObjectStringMappingWithEmptyString() throws SQLException {
+		//SELECT 1 as i, 2 as l, 'c' as c, 'str' as str
+		final PreparedStatement ps = connection.prepareStatement("SELECT  ROW(1,2,'c','')::tmp.simple_type_for_embed as obj");
+		final ResultSet rs = ps.executeQuery();
+		final TypeMapper mapper = TypeMapperFactory.createTypeMapper(ClassWithObjectWithEmbed.class);
+		int i = 0;
+		while( rs.next() ) {
+			ClassWithObjectWithEmbed result = (ClassWithObjectWithEmbed) mapper.mapRow(rs, i++);
+			Assert.assertNotNull(result.getClassWithEmbed());
+			Assert.assertEquals("", result.getClassWithEmbed().getStr());
+		}
+	}
+
 
 }

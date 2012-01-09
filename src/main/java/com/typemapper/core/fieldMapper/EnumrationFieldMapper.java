@@ -9,6 +9,10 @@ public class EnumrationFieldMapper implements FieldMapper {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Object mapField(String string, Class clazz) {
+		if (string == null) {
+			return null;
+		}
+
 		if (clazz.getEnumConstants() == null) {
 			LOG.warn( clazz + " is not an enum");
 			return null;
