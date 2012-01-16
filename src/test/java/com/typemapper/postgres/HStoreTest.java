@@ -1,4 +1,4 @@
-package com.typemapper.parser.postgres;
+package com.typemapper.postgres;
 
 
 import static org.hamcrest.CoreMatchers.is;
@@ -9,13 +9,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.typemapper.parser.exception.HStoreParseException;
-import com.typemapper.parser.postgres.HStore;
 
 public class HStoreTest {
 

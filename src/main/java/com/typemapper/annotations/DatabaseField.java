@@ -13,7 +13,21 @@ import com.typemapper.core.fieldMapper.AnyTransformer;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface DatabaseField {
-	
-	String name() default "";
-	Class<? extends ValueTransformer<?, ?>> transformer() default AnyTransformer.class;
+
+    /**
+     * Define the name of the database field.
+     */
+    String name() default "";
+
+    /**
+     * Define the position of the database field (is needed for passing field position when serializing object as
+     * PostgreSQL ROW).
+     */
+    int position() default -1;
+
+    /**
+     * Transformer class of type {@link ValueTransformer} that can be used to transform incoming value into a needed
+     * class (is needed for cases like non-standard way of passing enums).
+     */
+    Class<? extends ValueTransformer<?, ?>> transformer() default AnyTransformer.class;
 }
