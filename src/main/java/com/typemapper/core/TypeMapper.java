@@ -98,6 +98,8 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
 				}
 				i++;
 				continue;
+                        } else if (obj instanceof PGobject && ((PGobject)obj).getType().equals("hstore")) {
+                                node = new SimpleResultNode(obj, name);
 			} else if (obj instanceof PGobject) {
 				final PGobject pgObj = (PGobject) obj;
 				node = new ObjectResultNode(pgObj.getValue(), name, pgObj.getType(), set.getStatement().getConnection());
