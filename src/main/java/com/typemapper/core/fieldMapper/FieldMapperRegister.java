@@ -54,6 +54,9 @@ public class FieldMapperRegister {
 
 		final FieldMapper bigDecimalMapper = new BigDecimalFieldMappper();
 		FieldMapperRegister.register(BigDecimal.class, bigDecimalMapper);
+                
+                final FieldMapper hstoreMapper = new HStoreFieldMapper();
+                FieldMapperRegister.register(Map.class, hstoreMapper);
 	}
 	
 	@SuppressWarnings("rawtypes")
