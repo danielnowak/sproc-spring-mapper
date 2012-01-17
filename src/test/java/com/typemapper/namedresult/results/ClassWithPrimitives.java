@@ -15,6 +15,8 @@ public class ClassWithPrimitives {
     @DatabaseField(name = "c")
     public char c;
 
+    public ClassWithPrimitives() { }
+
     public ClassWithPrimitives(final int i, final long l, final char c) {
         this.i = i;
         this.l = l;

@@ -13,10 +13,6 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +34,12 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
 
     @Before
     public void createJdbcTemplate() {
-        BasicConfigurator.configure();
-        Logger.getRootLogger().setLevel(Level.DEBUG);
-        Logger.getLogger(org.springframework.jdbc.datasource.DataSourceUtils.class).setLevel(Level.INFO);
-        Logger.getLogger("org.springframework.jdbc.core.JdbcTemplate").setLevel(Level.WARN);
-        Logger.getLogger("org.springframework.beans").setLevel(Level.WARN);
-        Logger.getLogger("org.springframework.jdbc.support").setLevel(Level.WARN);
+// BasicConfigurator.configure();
+// Logger.getRootLogger().setLevel(Level.INFO);
+// Logger.getLogger(org.springframework.jdbc.datasource.DataSourceUtils.class).setLevel(Level.INFO);
+// Logger.getLogger("org.springframework.jdbc.core.JdbcTemplate").setLevel(Level.WARN);
+// Logger.getLogger("org.springframework.beans").setLevel(Level.WARN);
+// Logger.getLogger("org.springframework.jdbc.support").setLevel(Level.WARN);
 
         this.template = new JdbcTemplate(new SingleConnectionDataSource(this.connection, false));
     }
