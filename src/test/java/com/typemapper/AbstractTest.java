@@ -27,7 +27,7 @@ public class AbstractTest {
 		connection.prepareStatement("DROP SCHEMA IF EXISTS tmp2 CASCADE;").execute();
 		connection.prepareStatement("CREATE SCHEMA tmp;").execute();
 		connection.prepareStatement("CREATE SCHEMA tmp2;").execute();
-		connection.prepareStatement("set search_path to tmp,tmp2;").execute();
+		connection.prepareStatement("set search_path to tmp,tmp2,public;").execute();
 		connection.prepareStatement("CREATE DOMAIN tmp.gender AS char;").execute();
 		connection.prepareStatement("CREATE TYPE tmp.type_with_domain AS (g tmp.gender)").execute();
 		
