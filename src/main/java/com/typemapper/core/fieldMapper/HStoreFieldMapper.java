@@ -1,15 +1,13 @@
 package com.typemapper.core.fieldMapper;
 
-import org.apache.log4j.Logger;
-
-import com.typemapper.parser.postgres.HStore;
+import com.typemapper.postgres.HStore;
 
 public class HStoreFieldMapper implements FieldMapper {
 
-    private static final Logger LOG = Logger.getLogger(HStoreFieldMapper.class);
+    // private static final Logger LOG = Logger.getLogger(HStoreFieldMapper.class);
 
     @Override
-    public Object mapField(String value, Class clazz) {
+    public Object mapField(final String value, final Class clazz) {
         if (value == null) {
             return null;
         }
