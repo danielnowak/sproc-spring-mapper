@@ -7,11 +7,13 @@ import java.util.Collection;
 
 import org.postgresql.util.PGobject;
 
+import com.typemapper.postgres.PgTypeHelper.PgTypeDataHolder;
+
 public final class PgRow extends PGobject {
 
     private static final long serialVersionUID = -2855096142894174113L;
 
-    private final PgRowSerializer rowSerializer;
+    private final PgRowSerializer serializer;
 
     private final class PgRowSerializer extends AbstractPgCollectionSerializer<Object> {
         protected PgRowSerializer(final Collection<Object> c) {
@@ -40,13 +42,17 @@ public final class PgRow extends PGobject {
     }
 
     protected PgRow(final String recordTypeName, final Collection<Object> c) throws SQLException {
-        this.rowSerializer = new PgRowSerializer(c);
+        this.serializer = new PgRowSerializer(c);
         this.setType(recordTypeName);
-        this.setValue(rowSerializer.toString());
+        this.setValue(serializer.toString());
     }
 
-    public static PgRow ROW(final Object... array) {
-        return PgRow.ROW(null, array == null ? null : Arrays.asList(array));
+    public PgRow(final PgTypeDataHolder typeDataHolder) throws SQLException {
+        this(typeDataHolder.getTypeName(), typeDataHolder.getAttributes());
+    }
+
+    public static PgRow ROW(final Object... array) throws SQLException {
+        return new PgRow(null, array == null ? null : Arrays.asList(array));
     }
 
     @SuppressWarnings("unchecked")
@@ -54,8 +60,14 @@ public final class PgRow extends PGobject {
         return new PgRow(null, (Collection<Object>) collection);
     }
 
+    @Override
+    public String toString() {
+        return serializer.toString();
+    }
+
     public PGobject asPGobject(final String recordTypeName) throws SQLException {
         this.setType(recordTypeName);
         return this;
     }
+
 }

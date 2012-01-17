@@ -14,10 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.postgresql.util.PGobject;
 
 import com.typemapper.annotations.DatabaseField;
+import com.typemapper.annotations.DatabaseType;
 
 public class PgTypeHelper {
 
@@ -126,18 +128,93 @@ public class PgTypeHelper {
         return typeName;
     }
 
-    public static final Collection<Object> getObjectAttributesForPgSerialization(final Object obj) {
+    private static String rewriteCanelCaseNameToLowercaseUnderscoreName(final String camelCaseName) {
+
+        if (camelCaseName == null) {
+            throw new NullPointerException();
+        }
+
+        final int length = camelCaseName.length();
+        StringBuilder r = new StringBuilder(length * 2);
+
+        // myFieldName -> my_field_name
+        // MyFileName -> my_field_name
+        // MyFILEName -> my_file_name
+        // too lazy to write a small automata here... so quick and dirty by now
+        boolean wasUpper = false;
+        for (int i = 0; i < length; i++) {
+            char ch = camelCaseName.charAt(i);
+
+            if (Character.isUpperCase(ch)) {
+                if (i > 0) {
+                    if ((!wasUpper) && (ch != '_')) {
+                        r.append('_');
+                    }
+                }
+
+                ch = Character.toLowerCase(ch);
+                wasUpper = true;
+            } else {
+                if (wasUpper) {
+                    int p = r.length() - 2;
+                    if (p > 1 && r.charAt(p) != '_') {
+                        r.insert(p, '_');
+                    }
+                }
+
+                wasUpper = false;
+            }
+
+            r.append(ch);
+        }
+
+        return r.toString();
+    }
+
+    public static final class PgTypeDataHolder {
+        private String typeName;
+        private Collection<Object> attributes;
+
+        PgTypeDataHolder(final String typeName, final Collection<Object> attributes) {
+            this.typeName = typeName;
+            this.attributes = attributes;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public Collection<Object> getAttributes() {
+            return attributes;
+        }
+
+    }
+
+    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj) {
         if (obj == null) {
             throw new NullPointerException();
         }
 
+        String typeName = null;
         Class<?> clazz = obj.getClass();
         if (clazz.isPrimitive() || clazz.isArray()) {
             throw new IllegalArgumentException("Passed object should be a class with parameters");
         }
 
-        List<Object> resultList = new ArrayList<Object>();
+        DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
+        if (databaseType != null) {
+            typeName = databaseType.name();
+        }
 
+        if (typeName == null) {
+
+            // fill the name with de-CamelCased name if we could not get it from the annotation
+            typeName = rewriteCanelCaseNameToLowercaseUnderscoreName(clazz.getName());
+        }
+
+        List<Object> resultList = null;
+        TreeMap<Integer, Object> resultPositionMap = null;
+        TreeMap<Integer, Object> resultNameMap = null;
         for (Field f : clazz.getDeclaredFields()) {
             DatabaseField annotation = f.getAnnotation(DatabaseField.class);
             if (annotation != null) {
@@ -145,18 +222,44 @@ public class PgTypeHelper {
                     f.setAccessible(true);
                 }
 
+                Object value;
                 try {
-                    Object value = f.get(obj);
-                    resultList.add(value);
+                    value = f.get(obj);
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("Could not read value of field " + f.getName(), e);
                 } catch (IllegalAccessException e) {
                     throw new IllegalArgumentException("Could not read value of field " + f.getName(), e);
                 }
+
+                int fieldPosition = annotation.position();
+                if (fieldPosition > 0) {
+                    if (resultPositionMap == null) {
+                        resultPositionMap = new TreeMap<Integer, Object>();
+                    }
+
+                    resultPositionMap.put(fieldPosition, value);
+                } else {
+                    if (resultList == null) {
+                        resultList = new ArrayList<Object>();
+                    }
+
+                    resultList.add(value);
+                }
             }
         }
 
-        return resultList;
+        int fieldsWithDefinedPositions = resultPositionMap == null ? 0 : resultPositionMap.size();
+        int fieldsWithUndefinedPositions = resultList == null ? 0 : resultList.size();
+        if (fieldsWithDefinedPositions > 0 && fieldsWithUndefinedPositions > 0) {
+            throw new IllegalArgumentException("Class " + clazz.getName()
+                    + " should have all its database related fields marked with correct positions");
+        }
+
+        if (fieldsWithDefinedPositions > 0) {
+            return new PgTypeDataHolder(typeName, Collections.unmodifiableCollection(resultPositionMap.values()));
+        } else {
+            return new PgTypeDataHolder(typeName, Collections.unmodifiableCollection(resultList));
+        }
     }
 
     /**
@@ -187,7 +290,7 @@ public class PgTypeHelper {
                 final int l = Array.getLength(o);
                 final List<String> stringList = new ArrayList<String>(l);
                 for (int i = 0; i < l; i++) {
-                    stringList.set(i, String.valueOf(Array.get(o, i)));
+                    stringList.add(String.valueOf(Array.get(o, i)));
                 }
 
                 sb.append(PgArray.ARRAY(stringList).toString());
@@ -202,13 +305,17 @@ public class PgTypeHelper {
             // try to extract the attributes marked as @DatabaseField and pack it as a ROW
             // here we do not need to know the name of the PG type
             try {
-                sb.append(new PgRow(null, PgTypeHelper.getObjectAttributesForPgSerialization(o)).toString());
+                sb.append(asPGobject(o).toString());
             } catch (SQLException e) {
                 throw new IllegalArgumentException("Could not serialize object of class " + clazz.getName(), e);
             }
         }
 
         return sb.toString();
+    }
+
+    public static final PgRow asPGobject(final Object o) throws SQLException {
+        return new PgRow(getObjectAttributesForPgSerialization(o));
     }
 
 }

@@ -6,7 +6,6 @@ import java.util.Iterator;
 abstract class AbstractPgCollectionSerializer<E> extends AbstractPgSerializer {
 
     protected final Collection<E> collection;
-    private String value;
 
     protected AbstractPgCollectionSerializer(final Collection<E> c) {
         this.collection = c;
@@ -27,6 +26,10 @@ abstract class AbstractPgCollectionSerializer<E> extends AbstractPgSerializer {
     }
 
     @Override
+    protected boolean isEmpty() {
+        return collection.isEmpty();
+    }
+
     protected abstract void quoteChar(StringBuilder sb, char ch);
 
     @Override

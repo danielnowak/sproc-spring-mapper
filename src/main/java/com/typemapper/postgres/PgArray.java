@@ -11,7 +11,7 @@ import java.util.Map;
 public final class PgArray<E> implements java.sql.Array {
 
     private String elementTypeName = null;
-    private final PgArraySerializer<E> arraySerializer;
+    private final PgArraySerializer<E> serializer;
 
     private static class PgArraySerializer<E> extends AbstractPgCollectionSerializer<E> {
 
@@ -41,7 +41,7 @@ public final class PgArray<E> implements java.sql.Array {
     }
 
     protected PgArray(final String elementTypeName, final Collection<E> c) {
-        this.arraySerializer = new PgArraySerializer<E>(c);
+        this.serializer = new PgArraySerializer<E>(c);
         this.elementTypeName = elementTypeName;
     }
 
@@ -61,6 +61,11 @@ public final class PgArray<E> implements java.sql.Array {
         }
 
         return new PgArray<T>(PgTypeHelper.getSQLNameForClass(elementClass), collection);
+    }
+
+    @Override
+    public String toString() {
+        return serializer.toString();
     }
 
     /**
@@ -97,7 +102,7 @@ public final class PgArray<E> implements java.sql.Array {
 
     @Override
     public Object getArray() throws SQLException {
-        return arraySerializer.collection.toArray();
+        return serializer.collection.toArray();
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.typemapper.namedresult.results;
 
 import com.typemapper.annotations.DatabaseField;
+import com.typemapper.annotations.DatabaseType;
 
+@DatabaseType(name = "additional_type")
 public class ClassWithPrimitives {
 
     @DatabaseField(name = "i")
