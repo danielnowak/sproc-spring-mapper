@@ -55,7 +55,8 @@ public class Mapping {
 		for (final Field field : fields) {
 			final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
 			if (annotation != null) {
-				result.add(new Mapping(field, annotation.name(), embed, embedField, annotation.transformer()));
+                                final String databaseFieldName = getDatabaseFieldName(field, annotation.name());
+				result.add(new Mapping(field, databaseFieldName, embed, embedField, annotation.transformer()));
 			}
 			if (!embed) {
 				final Embed embedAnnotation = field.getAnnotation(Embed.class);
@@ -124,6 +125,48 @@ public class Mapping {
 		return new String(chars);
 		
 	}
+        
+        private static final String getDatabaseFieldName(Field field, String annotationName) {
+            if (annotationName != null && !annotationName.isEmpty()) {
+                return annotationName;
+            }
+            return camelCaseToUnderScore(field.getName());
+        }
+        
+        /**
+         * stolen from commons StringUtils.splitByCharacterTypeCamelCase
+         * @param str
+         * @return 
+         */
+        private static final String camelCaseToUnderScore(final String str) {
+            final StringBuilder result = new StringBuilder();
+            char[] c = str.toCharArray();
+            int tokenStart = 0;
+            int currentType = Character.getType(c[tokenStart]);
+            for (int pos = tokenStart + 1; pos < c.length; pos++) {
+                int type = Character.getType(c[pos]);
+                if (type == currentType) {
+                    continue;
+                }
+                if (type == Character.LOWERCASE_LETTER && currentType == Character.UPPERCASE_LETTER) {
+                    int newTokenStart = pos - 1;
+                    if (newTokenStart != tokenStart) {
+                        if (result.length() > 0) {
+                            result.append('_');
+                        }
+                        result.append((new String(c, tokenStart, newTokenStart - tokenStart)).toLowerCase());
+                        tokenStart = newTokenStart;
+                    }
+                }
+                currentType = type;
+            }
+            final String remainingToken = new String(c, tokenStart, c.length - tokenStart);
+            if (result.length() > 0 && !remainingToken.isEmpty()) {
+                result.append('_');
+            }
+            result.append(remainingToken.toLowerCase());
+            return result.toString();
+        }
 
 	public Field getField() {
 		return field;
