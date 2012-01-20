@@ -200,6 +200,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
     }
 
     private static final char QUOTE = '"';
+    private static final char BACKSLASH = '\\';
     private static final char EQUALS = '=';
     private static final char GREATER = '>';
     private static final char COMMA = ',';
@@ -323,7 +324,8 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
                             // we are done
                             break loop;
                         } else {
-                            throw new HStoreParseException("Cannot find comma as an end of the value", position);
+                            throw new HStoreParseException("Cannot find comma as an end of the value: '" + value + "'",
+                                position);
                         }
 
                     default :
@@ -357,25 +359,43 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
             boolean insideQuote = true;
             while (position < length - 1) {
                 char ch = value.charAt(++position);
-                if (ch == QUOTE) {
+                if (ch == BACKSLASH) {
 
-                    // we saw a quote, it is either a closing quote, or it is a quoted quote
+                    // we saw a backslash, it is either a escaped quote or escaped backslash
                     final int nextPosition = position + 1;
                     if (nextPosition < length) {
                         final char nextCh = value.charAt(nextPosition);
                         if (nextCh == QUOTE) {
 
-                            // it was a double quote, so we have to push a quote into the result
+                            // it was a escaped quote, so we have to push a quote into the result
                             if (sb == null) {
-                                sb = new StringBuilder(value.substring(firstQuotePosition + 1, nextPosition));
-                            } else {
-                                sb.append(QUOTE);
+                                sb = new StringBuilder(value.substring(firstQuotePosition + 1, position));
+
                             }
+
+                            sb.append(QUOTE);
+
+                            position++;
+                            continue;
+                        } else if (nextCh == BACKSLASH) {
+
+                            // it was a escaped backslash, so we have to push a "\" into the result
+                            if (sb == null) {
+                                sb = new StringBuilder(value.substring(firstQuotePosition + 1, position));
+
+                            }
+
+                            sb.append(BACKSLASH);
 
                             position++;
                             continue;
                         }
                     }
+
+                    throw new HStoreParseException("Backslash without following backslash or quote at position "
+                            + position, position);
+
+                } else if (ch == QUOTE) {
 
                     // it was a closing quote as we either ware are at the end of the rawValue string
                     // or we could not find the next quote
