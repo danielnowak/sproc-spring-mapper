@@ -7,8 +7,10 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -128,7 +130,7 @@ public class PgTypeHelper {
         return typeName;
     }
 
-    private static String rewriteCanelCaseNameToLowercaseUnderscoreName(final String camelCaseName) {
+    public static String camelCaseToUnderScore(final String camelCaseName) {
 
         if (camelCaseName == null) {
             throw new NullPointerException();
@@ -190,7 +192,8 @@ public class PgTypeHelper {
 
     }
 
-    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj) {
+    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj,
+            final String typeHint) {
         if (obj == null) {
             throw new NullPointerException();
         }
@@ -206,16 +209,36 @@ public class PgTypeHelper {
             typeName = databaseType.name();
         }
 
-        if (typeName == null) {
+        if (typeName == null || typeName.isEmpty()) {
+
+            // if no annotation is given use the typehint parameter
+            typeName = typeHint;
+        }
+
+        if (typeName == null || typeName.isEmpty()) {
 
             // fill the name with de-CamelCased name if we could not get it from the annotation
-            typeName = rewriteCanelCaseNameToLowercaseUnderscoreName(clazz.getName());
+            typeName = camelCaseToUnderScore(clazz.getSimpleName());
         }
 
         List<Object> resultList = null;
         TreeMap<Integer, Object> resultPositionMap = null;
         TreeMap<Integer, Object> resultNameMap = null;
-        for (Field f : clazz.getDeclaredFields()) {
+
+        Field[] fields = obj.getClass().getDeclaredFields();
+
+        // Hacky: sort fields alphabetically as class fields' order is undefined
+        // http://stackoverflow.com/questions/1097807/java-reflection-is-the-order-of-class-fields-and-methods-standardized
+        Arrays.sort(fields, new Comparator<Field>() {
+
+                @Override
+                public int compare(final Field a, final Field b) {
+                    return a.getName().compareTo(b.getName());
+                }
+
+            });
+
+        for (Field f : fields) {
             DatabaseField annotation = f.getAnnotation(DatabaseField.class);
             if (annotation != null) {
                 if (!f.isAccessible()) {
@@ -297,6 +320,9 @@ public class PgTypeHelper {
             } else {
                 sb.append(PgArray.ARRAY((Object[]) o).toString());
             }
+        } else if (o instanceof Map) {
+            final Map<Object, Object> map = (Map<Object, Object>) o;
+            sb.append(HStore.serialize(map));
         } else if (o instanceof Collection) {
             sb.append(PgArray.ARRAY((Collection<?>) o).toString());
         } else {
@@ -315,7 +341,11 @@ public class PgTypeHelper {
     }
 
     public static final PgRow asPGobject(final Object o) throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o));
+        return new PgRow(getObjectAttributesForPgSerialization(o, null));
+    }
+
+    public static final PgRow asPGobject(final Object o, final String typeHint) throws SQLException {
+        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint));
     }
 
 }

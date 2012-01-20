@@ -51,6 +51,10 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
         return r;
     }
 
+    public static String serialize(final Map<Object, Object> map) {
+        return (new HStoreSerializer(map)).toPgString();
+    }
+
     private static final class HStoreSerializer extends AbstractPgSerializer {
 
         private final Map<Object, Object> map;

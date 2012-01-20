@@ -12,6 +12,8 @@ import java.sql.Types;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,6 +30,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import com.typemapper.AbstractTest;
 
 import com.typemapper.namedresult.results.ClassWithPrimitives;
+import com.typemapper.namedresult.results.ClassWithPrimitivesAndMap;
 
 @RunWith(Parameterized.class)
 public class PgSerializerToDatabaseTest extends AbstractTest {
@@ -61,6 +64,12 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
         this.objectToSerialize = objectToSerialize;
         this.expectedString = expectedString;
         this.expectedSQLType = expectedSQLType;
+    }
+
+    private static Map<String, String> createSimpleMap(final String key, final String val) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(key, val);
+        return map;
     }
 
     /*
@@ -130,7 +139,7 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                     /* 12 */
                     {
                         ROW(1, new ClassWithPrimitives(1, 2L, 'c')).asPGobject("int_with_additional_type"),
-                        "(1,\"(1,2,c)\")", Types.OTHER
+                        "(1,\"(c,1,2)\")", Types.OTHER
                     },
 
                     /* 13 */
@@ -139,11 +148,17 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                             new ClassWithPrimitives[] {
                                 new ClassWithPrimitives(1, 100L, 'a'), new ClassWithPrimitives(2, 200L, 'b')
                             }).asPGobject("int_with_additional_type_array"),
-                        "(1,\"{\"\"(1,100,a)\"\",\"\"(2,200,b)\"\"}\")", Types.OTHER
+                        "(1,\"{\"\"(a,1,100)\"\",\"\"(b,2,200)\"\"}\")", Types.OTHER
                     },
 
                     /* 14 */
-                    {PgTypeHelper.asPGobject(new ClassWithPrimitives(1, 100L, 'a')), "(1,100,a)", Types.OTHER}
+                    {PgTypeHelper.asPGobject(new ClassWithPrimitives(1, 100L, 'a')), "(a,1,100)", Types.OTHER},
+
+                    /* 15 */
+                    {
+                        PgTypeHelper.asPGobject(new ClassWithPrimitivesAndMap(1, 2, 'a', createSimpleMap("b", "c"))),
+                        "(1,2,a,\"\"\"b\"\"=>\"\"c\"\"\")", Types.OTHER
+                    }
                 });
     }
 
@@ -156,11 +171,17 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                        .execute();
         this.connection.prepareStatement(
             "CREATE TYPE tmp.text_duplet_with_int_duplet_array AS (a text, b text, c tmp.int_duplet[]);").execute();
-        this.connection.prepareStatement("CREATE TYPE tmp.additional_type AS (i integer, l bigint, c text);").execute();
+
+        // NOTE: additional_type members must be sorted alphabetically (because annotation positions were not defined)
+        this.connection.prepareStatement("CREATE TYPE tmp.additional_type AS (c text, i integer, l bigint);").execute();
         this.connection.prepareStatement("CREATE TYPE tmp.int_with_additional_type AS (a int, t tmp.additional_type);")
                        .execute();
         this.connection.prepareStatement(
             "CREATE TYPE tmp.int_with_additional_type_array AS (a int, t tmp.additional_type[]);").execute();
+
+        // type with positional members:
+        this.connection.prepareStatement(
+            "CREATE TYPE tmp.additional_type_with_positions AS (i int, l bigint, c text, h hstore);").execute();
     }
 
     @After
