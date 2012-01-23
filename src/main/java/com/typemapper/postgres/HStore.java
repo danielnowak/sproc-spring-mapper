@@ -27,6 +27,10 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
         this.length = 0;
     }
 
+    public HStore(final Map<?, ?> map) {
+        this((new HStoreSerializer(map)).toPgString());
+    }
+
     @Override
     public void setValue(final String rawValue) {
         if (!"hstore".equals(this.type)) {
@@ -51,7 +55,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
         return r;
     }
 
-    public static String serialize(final Map<Object, Object> map) {
+    public static String serialize(final Map<?, ?> map) {
         return (new HStoreSerializer(map)).toPgString();
     }
 
@@ -140,7 +144,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
 
                 final Object key = entry.getKey();
                 if (key == null) {
-                    sb.append(NULL);
+                    throw new IllegalArgumentException("Null keys are not supported by HStore");
                 } else {
                     quote(sb, PgTypeHelper.toPgString(key));
                 }

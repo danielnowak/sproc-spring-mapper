@@ -321,7 +321,7 @@ public class PgTypeHelper {
                 sb.append(PgArray.ARRAY((Object[]) o).toString());
             }
         } else if (o instanceof Map) {
-            final Map<Object, Object> map = (Map<Object, Object>) o;
+            final Map<?, ?> map = (Map<?, ?>) o;
             sb.append(HStore.serialize(map));
         } else if (o instanceof Collection) {
             sb.append(PgArray.ARRAY((Collection<?>) o).toString());
