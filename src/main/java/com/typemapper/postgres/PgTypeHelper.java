@@ -3,6 +3,7 @@ package com.typemapper.postgres;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -22,6 +23,11 @@ import org.postgresql.util.PGobject;
 
 import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.DatabaseType;
+
+import com.typemapper.core.Mapping;
+import com.typemapper.core.db.DbType;
+import com.typemapper.core.db.DbTypeField;
+import com.typemapper.core.db.DbTypeRegister;
 
 public class PgTypeHelper {
 
@@ -194,6 +200,11 @@ public class PgTypeHelper {
 
     public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj,
             final String typeHint) {
+        return getObjectAttributesForPgSerialization(obj, typeHint, null);
+    }
+
+    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint,
+            final Connection connection) {
         if (obj == null) {
             throw new NullPointerException();
         }
@@ -226,17 +237,31 @@ public class PgTypeHelper {
         TreeMap<Integer, Object> resultNameMap = null;
 
         Field[] fields = obj.getClass().getDeclaredFields();
+        Map<String, DbTypeField> dbFields = null;
 
-        // Hacky: sort fields alphabetically as class fields' order is undefined
-        // http://stackoverflow.com/questions/1097807/java-reflection-is-the-order-of-class-fields-and-methods-standardized
-        Arrays.sort(fields, new Comparator<Field>() {
-
-                @Override
-                public int compare(final Field a, final Field b) {
-                    return a.getName().compareTo(b.getName());
+        if (connection != null) {
+            try {
+                DbType dbType = DbTypeRegister.getDbType(typeName, connection);
+                dbFields = new HashMap<String, DbTypeField>();
+                for (DbTypeField dbfield : dbType.getFields()) {
+                    dbFields.put(dbfield.getName(), dbfield);
                 }
+            } catch (SQLException e) {
+                throw new IllegalArgumentException("Could not get PG type information for " + typeName, e);
+            }
+        } else {
 
-            });
+            // Hacky: sort fields alphabetically as class fields' order is undefined
+            // http://stackoverflow.com/questions/1097807/java-reflection-is-the-order-of-class-fields-and-methods-standardized
+            Arrays.sort(fields, new Comparator<Field>() {
+
+                    @Override
+                    public int compare(final Field a, final Field b) {
+                        return a.getName().compareTo(b.getName());
+                    }
+
+                });
+        }
 
         for (Field f : fields) {
             DatabaseField annotation = f.getAnnotation(DatabaseField.class);
@@ -261,12 +286,35 @@ public class PgTypeHelper {
                     }
 
                     resultPositionMap.put(fieldPosition, value);
+
                 } else {
-                    if (resultList == null) {
-                        resultList = new ArrayList<Object>();
+                    DbTypeField dbField = null;
+                    if (dbFields != null) {
+
+                        // we have type information from database (field positions)
+                        String dbFieldName = Mapping.getDatabaseFieldName(f, annotation.name());
+                        dbField = dbFields.get(dbFieldName);
+
+                        if (dbField == null) {
+                            throw new IllegalArgumentException("Field " + f.getName() + " (" + dbFieldName
+                                    + ") of class " + clazz.getSimpleName() + " could not be found in database type "
+                                    + typeName);
+                        }
+
+                        if (resultPositionMap == null) {
+                            resultPositionMap = new TreeMap<Integer, Object>();
+                        }
+
+                        resultPositionMap.put(dbField.getPosition(), value);
                     }
 
-                    resultList.add(value);
+                    if (dbField == null) {
+                        if (resultList == null) {
+                            resultList = new ArrayList<Object>();
+                        }
+
+                        resultList.add(value);
+                    }
                 }
             }
         }
@@ -275,7 +323,7 @@ public class PgTypeHelper {
         int fieldsWithUndefinedPositions = resultList == null ? 0 : resultList.size();
         if (fieldsWithDefinedPositions > 0 && fieldsWithUndefinedPositions > 0) {
             throw new IllegalArgumentException("Class " + clazz.getName()
-                    + " should have all its database related fields marked with correct positions");
+                    + " should have all its database related fields marked with correct names or positions");
         }
 
         if (fieldsWithDefinedPositions > 0) {
@@ -285,12 +333,16 @@ public class PgTypeHelper {
         }
     }
 
+    public static final String toPgString(final Object o) {
+        return toPgString(o, null);
+    }
+
     /**
      * Serialize an object into a PostgreSQL string.
      *
      * @param  o  object to be serialized
      */
-    public static final String toPgString(final Object o) {
+    public static final String toPgString(final Object o, final Connection connection) {
         if (o == null) {
             return "NULL";
         }
@@ -331,7 +383,7 @@ public class PgTypeHelper {
             // try to extract the attributes marked as @DatabaseField and pack it as a ROW
             // here we do not need to know the name of the PG type
             try {
-                sb.append(asPGobject(o).toString());
+                sb.append(asPGobject(o, null, connection).toString());
             } catch (SQLException e) {
                 throw new IllegalArgumentException("Could not serialize object of class " + clazz.getName(), e);
             }
@@ -341,11 +393,16 @@ public class PgTypeHelper {
     }
 
     public static final PgRow asPGobject(final Object o) throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o, null));
+        return new PgRow(getObjectAttributesForPgSerialization(o, null, null));
     }
 
     public static final PgRow asPGobject(final Object o, final String typeHint) throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint));
+        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, null));
+    }
+
+    public static final PgRow asPGobject(final Object o, final String typeHint, final Connection connection)
+        throws SQLException {
+        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, connection));
     }
 
 }
