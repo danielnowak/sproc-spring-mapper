@@ -48,8 +48,8 @@ public class ParseUtils {
                 char nextChar = c[i + 1];
                 if (nextChar == ',' || nextChar == '}') {
 
-                    // we have an empty position, that is we have a NULL value
-                    result.add(null);
+                    throw new ArrayParserException("Empty array value at position " + i + " should be quoted: "
+                            + value);
                 }
 
                 i++;
@@ -89,9 +89,12 @@ public class ParseUtils {
                     i++;
                 }
 
-                // if the element was not quoted and was empty, it is supposed
-                // to be NULL
-                result.add(element.length() > 0 ? element.toString() : null);
+                if ("NULL".equals(element.toString().toUpperCase(Locale.ENGLISH))) {
+                    result.add(null);
+                } else {
+                    result.add(element.toString());
+                }
+
                 element = new StringBuilder(appendStringSize);
             }
         }
