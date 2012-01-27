@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -372,6 +374,10 @@ public class PgTypeHelper {
             } else {
                 sb.append(PgArray.ARRAY((Object[]) o).toString());
             }
+        } else if (clazz.isEnum()) {
+            sb.append(((Enum) o).name());
+        } else if (o instanceof Date) {
+            sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format((Date) o));
         } else if (o instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) o;
             sb.append(HStore.serialize(map));
@@ -393,11 +399,11 @@ public class PgTypeHelper {
     }
 
     public static final PgRow asPGobject(final Object o) throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o, null, null));
+        return asPGobject(o, null, null);
     }
 
     public static final PgRow asPGobject(final Object o, final String typeHint) throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, null));
+        return asPGobject(o, typeHint, null);
     }
 
     public static final PgRow asPGobject(final Object o, final String typeHint, final Connection connection)
