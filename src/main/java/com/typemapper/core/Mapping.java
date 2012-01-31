@@ -33,8 +33,18 @@ public class Mapping {
     public static List<Mapping> getMappingsForClass(@SuppressWarnings("rawtypes") final Class clazz) {
         List<Mapping> result = cache.get(clazz);
         if (result == null) {
-            result = getMappingsForClass(clazz, false, null);
-            cache.put(clazz, result);
+            synchronized (Mapping.class) {
+                result = getMappingsForClass(clazz, false, null);
+
+                @SuppressWarnings("rawtypes")
+                Class parentClass = clazz.getSuperclass();
+                while (parentClass != null) {
+                    result.addAll(Mapping.getMappingsForClass(parentClass));
+                    parentClass = parentClass.getSuperclass();
+                }
+
+                cache.put(clazz, result);
+            }
         }
 
         return result;
@@ -121,7 +131,7 @@ public class Mapping {
     }
 
     private static String capitalize(final String name) {
-        if (name == null || name.length() == 0) {
+        if ((name == null) || (name.length() == 0)) {
             return name;
         }
 
@@ -136,7 +146,7 @@ public class Mapping {
     }
 
     public static final String getDatabaseFieldName(final Field field, final String annotationName) {
-        if (annotationName != null && !annotationName.isEmpty()) {
+        if ((annotationName != null) && !annotationName.isEmpty()) {
             return annotationName;
         }
 
@@ -161,7 +171,7 @@ public class Mapping {
                 continue;
             }
 
-            if (type == Character.LOWERCASE_LETTER && currentType == Character.UPPERCASE_LETTER) {
+            if ((type == Character.LOWERCASE_LETTER) && (currentType == Character.UPPERCASE_LETTER)) {
                 int newTokenStart = pos - 1;
                 if (newTokenStart != tokenStart) {
                     if (result.length() > 0) {
@@ -177,7 +187,7 @@ public class Mapping {
         }
 
         final String remainingToken = new String(c, tokenStart, c.length - tokenStart);
-        if (result.length() > 0 && !remainingToken.isEmpty()) {
+        if ((result.length() > 0) && !remainingToken.isEmpty()) {
             result.append('_');
         }
 
@@ -195,7 +205,7 @@ public class Mapping {
 
     public FieldMapper getFieldMapper() throws NotsupportedTypeException, InstantiationException,
         IllegalAccessException {
-        if (getAnnotation() != null && getAnnotation().transformer() != null) {
+        if ((getAnnotation() != null) && (getAnnotation().transformer() != null)) {
             if (!AnyTransformer.class.equals(getValueTransformer())) {
                 return new ValueTransformerFieldMapper(getValueTransformer());
             }
