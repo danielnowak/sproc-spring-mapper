@@ -1,5 +1,6 @@
 package com.typemapper.postgres;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import java.util.Arrays;
@@ -49,6 +50,12 @@ public final class PgRow extends PGobject {
 
     public PgRow(final PgTypeDataHolder typeDataHolder) throws SQLException {
         this(typeDataHolder.getTypeName(), typeDataHolder.getAttributes());
+    }
+
+    public PgRow(final PgTypeDataHolder typeDataHolder, final Connection connection) throws SQLException {
+        this.serializer = new PgRowSerializer(typeDataHolder.getAttributes());
+        this.setType(typeDataHolder.getTypeName());
+        this.setValue(serializer.toString(connection));
     }
 
     public static PgRow ROW(final Object... array) throws SQLException {

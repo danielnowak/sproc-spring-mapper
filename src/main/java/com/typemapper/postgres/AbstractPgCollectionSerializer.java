@@ -1,5 +1,7 @@
 package com.typemapper.postgres;
 
+import java.sql.Connection;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -96,7 +98,7 @@ abstract class AbstractPgCollectionSerializer<E> extends AbstractPgSerializer {
     }
 
     @Override
-    public final String toPgString() {
+    public final String toPgString(final Connection connection) {
 
         final Iterator<E> iterator = collection.iterator();
         StringBuilder sb = new StringBuilder();
@@ -109,7 +111,7 @@ abstract class AbstractPgCollectionSerializer<E> extends AbstractPgSerializer {
             if (element == null) {
                 appendNull(sb);
             } else {
-                quote(sb, PgTypeHelper.toPgString(element));
+                quote(sb, PgTypeHelper.toPgString(element, connection));
             }
 
             hasNext = iterator.hasNext();

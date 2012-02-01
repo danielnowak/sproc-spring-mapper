@@ -200,24 +200,23 @@ public class PgTypeHelper {
 
     }
 
-    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj,
-            final String typeHint) {
+    public static PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint) {
         return getObjectAttributesForPgSerialization(obj, typeHint, null);
     }
 
-    public static final PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint,
+    public static PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint,
             final Connection connection) {
         if (obj == null) {
             throw new NullPointerException();
         }
 
         String typeName = null;
-        Class<?> clazz = obj.getClass();
+        final Class<?> clazz = obj.getClass();
         if (clazz.isPrimitive() || clazz.isArray()) {
             throw new IllegalArgumentException("Passed object should be a class with parameters");
         }
 
-        DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
+        final DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
         if (databaseType != null) {
             typeName = databaseType.name();
         }
@@ -236,9 +235,8 @@ public class PgTypeHelper {
 
         List<Object> resultList = null;
         TreeMap<Integer, Object> resultPositionMap = null;
-        TreeMap<Integer, Object> resultNameMap = null;
 
-        Field[] fields = obj.getClass().getDeclaredFields();
+        final Field[] fields = obj.getClass().getDeclaredFields();
         Map<String, DbTypeField> dbFields = null;
 
         if (connection != null) {
@@ -335,7 +333,7 @@ public class PgTypeHelper {
         }
     }
 
-    public static final String toPgString(final Object o) {
+    public static String toPgString(final Object o) {
         return toPgString(o, null);
     }
 
@@ -344,7 +342,7 @@ public class PgTypeHelper {
      *
      * @param  o  object to be serialized
      */
-    public static final String toPgString(final Object o, final Connection connection) {
+    public static String toPgString(final Object o, final Connection connection) {
         if (o == null) {
             return "NULL";
         }
@@ -398,17 +396,17 @@ public class PgTypeHelper {
         return sb.toString();
     }
 
-    public static final PgRow asPGobject(final Object o) throws SQLException {
+    public static PgRow asPGobject(final Object o) throws SQLException {
         return asPGobject(o, null, null);
     }
 
-    public static final PgRow asPGobject(final Object o, final String typeHint) throws SQLException {
+    public static PgRow asPGobject(final Object o, final String typeHint) throws SQLException {
         return asPGobject(o, typeHint, null);
     }
 
-    public static final PgRow asPGobject(final Object o, final String typeHint, final Connection connection)
+    public static PgRow asPGobject(final Object o, final String typeHint, final Connection connection)
         throws SQLException {
-        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, connection));
+        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, connection), connection);
     }
 
 }

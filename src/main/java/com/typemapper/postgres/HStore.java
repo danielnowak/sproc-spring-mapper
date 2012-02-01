@@ -1,5 +1,7 @@
 package com.typemapper.postgres;
 
+import java.sql.Connection;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
     }
 
     public HStore(final Map<?, ?> map) {
-        this((new HStoreSerializer(map)).toPgString());
+        this((new HStoreSerializer(map)).toPgString(null));
     }
 
     @Override
@@ -56,7 +58,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
     }
 
     public static String serialize(final Map<?, ?> map) {
-        return (new HStoreSerializer(map)).toPgString();
+        return (new HStoreSerializer(map)).toPgString(null);
     }
 
     private static final class HStoreSerializer extends AbstractPgSerializer {
@@ -133,7 +135,7 @@ public class HStore extends PGobject implements Iterable<Map.Entry<String, Strin
         }
 
         @Override
-        public String toPgString() {
+        public String toPgString(final Connection connection) {
             final Iterator<Entry<Object, Object>> iterator = map.entrySet().iterator();
             StringBuilder sb = new StringBuilder();
 

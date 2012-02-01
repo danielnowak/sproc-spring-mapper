@@ -1,5 +1,7 @@
 package com.typemapper.postgres;
 
+import java.sql.Connection;
+
 abstract class AbstractPgSerializer {
 
     static final String NULL = "NULL";
@@ -19,10 +21,9 @@ abstract class AbstractPgSerializer {
 
     public abstract StringBuilder quote(final StringBuilder sb, final CharSequence s);
 
-    public abstract String toPgString();
+    public abstract String toPgString(Connection connection);
 
-    @Override
-    public final String toString() {
+    public final String toString(final Connection connection) {
         if (isNull()) {
             throw new NullPointerException("Null value of depends on the context, should use isNull() call before");
         }
@@ -33,9 +34,14 @@ abstract class AbstractPgSerializer {
                 return value;
             }
 
-            value = toPgString();
+            value = toPgString(connection);
         }
 
         return value;
+    }
+
+    @Override
+    public final String toString() {
+        return toString(null);
     }
 }
