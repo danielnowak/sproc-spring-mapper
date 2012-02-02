@@ -1,5 +1,6 @@
 package com.typemapper.postgres;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -66,6 +67,10 @@ public final class PgArray<E> implements java.sql.Array {
     @Override
     public String toString() {
         return serializer.toString();
+    }
+
+    public String toString(final Connection connection) {
+        return serializer.toString(connection);
     }
 
     /**

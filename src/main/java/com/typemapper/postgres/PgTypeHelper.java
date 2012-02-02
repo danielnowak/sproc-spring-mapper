@@ -380,7 +380,7 @@ public class PgTypeHelper {
             final Map<?, ?> map = (Map<?, ?>) o;
             sb.append(HStore.serialize(map));
         } else if (o instanceof Collection) {
-            sb.append(PgArray.ARRAY((Collection<?>) o).toString());
+            sb.append(PgArray.ARRAY((Collection<?>) o).toString(connection));
         } else {
 
             // we do not know what to do with this object,
