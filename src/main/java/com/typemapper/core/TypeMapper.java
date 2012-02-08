@@ -38,13 +38,6 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
     TypeMapper(final Class<ITEM> resultClass) {
         this.resultClass = resultClass;
         mappings = Mapping.getMappingsForClass(this.resultClass);
-
-        
-        //Class parentClass = this.resultClass.getSuperclass();
-        //while (parentClass != null) {
-        //    mappings.addAll(Mapping.getMappingsForClass(parentClass));
-        //    parentClass = parentClass.getSuperclass();
-        // }
     }
 
     @Override
@@ -131,7 +124,10 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
             i++;
         }
 
-        LOG.info("Extracted ResultTree: " + tree);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Extracted ResultTree: " + tree);
+        }
+
         return tree;
     }
 
@@ -140,7 +136,8 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
             try {
                 final DbResultNode node = tree.getChildByName(mapping.getName());
                 if (node == null) {
-                    LOG.error("Could not map property with name " + mapping.getName());
+                    LOG.error("Could not map property " + mapping.getName() + " of class " + resultClass
+                            .getSimpleName() + ": field not in result tree");
                     continue;
                 }
 
@@ -158,7 +155,8 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
                     mapping.map(result, value);
                 }
             } catch (final Exception e) {
-                LOG.error(e, e);
+                LOG.error("Could not map property " + mapping.getName() + " of class " + resultClass.getSimpleName(),
+                    e);
             }
         }
     }
