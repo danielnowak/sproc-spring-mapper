@@ -13,6 +13,7 @@ public final class PgArray<E> implements java.sql.Array {
 
     private String elementTypeName = null;
     private final PgArraySerializer<E> serializer;
+    private String serializedString = null;
 
     private static class PgArraySerializer<E> extends AbstractPgCollectionSerializer<E> {
 
@@ -66,6 +67,10 @@ public final class PgArray<E> implements java.sql.Array {
 
     @Override
     public String toString() {
+        if (serializedString != null) {
+            return serializedString;
+        }
+
         return serializer.toString();
     }
 
@@ -82,6 +87,12 @@ public final class PgArray<E> implements java.sql.Array {
      */
     public java.sql.Array asJdbcArray(final String elementTypeName) {
         this.elementTypeName = elementTypeName;
+        return this;
+    }
+
+    public java.sql.Array asJdbcArray(final String elementTypeName, final Connection connection) {
+        this.elementTypeName = elementTypeName;
+        this.serializedString = serializer.toString(connection);
         return this;
     }
 
