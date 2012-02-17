@@ -246,7 +246,7 @@ public class PgTypeHelper {
                 for (DbTypeField dbfield : dbType.getFields()) {
                     dbFields.put(dbfield.getName(), dbfield);
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new IllegalArgumentException("Could not get PG type information for " + typeName, e);
             }
         } else {
