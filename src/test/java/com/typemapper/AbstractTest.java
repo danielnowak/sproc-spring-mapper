@@ -95,8 +95,34 @@ public class AbstractTest {
                 "END " +
                 " $BODY$ " +
                 " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
-
+        
         execute(array_sproc);
+        String string_array_sproc = 	"CREATE OR REPLACE FUNCTION tmp.string_array_function(OUT str text, OUT arr text[]) " +
+        "RETURNS record AS " +
+        "$BODY$ " +
+        "DECLARE " +
+        "BEGIN " +
+        "str := 'str'; " +
+        "arr := ARRAY['result_1','result_2']; " +
+        "RETURN; " +
+        "END " +
+        " $BODY$ " +
+        " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+
+        execute(string_array_sproc);
+        
+        String string_null_array_sproc = 	"CREATE OR REPLACE FUNCTION tmp.string_null_array_function(OUT str text, OUT arr text[]) " +
+        "RETURNS record AS " +
+        "$BODY$ " +
+        "DECLARE " +
+        "BEGIN " +
+        "str := 'str'; " +
+        "RETURN; " +
+        "END " +
+        " $BODY$ " +
+        " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+
+        execute(string_null_array_sproc);
 
         /*
 
