@@ -40,6 +40,8 @@ public class AbstractTest {
         execute("CREATE TYPE tmp.simple_type_for_embed AS (i int, l int, c varchar, str varchar);");
         execute("CREATE TYPE tmp.complex_type AS (obj tmp.simple_type, str varchar);");
         execute("CREATE TYPE tmp.array_type AS (arr tmp.simple_type[], str varchar);");
+        execute("CREATE TYPE tmp.hstore_type AS (map hstore, str varchar);");
+        execute("CREATE TYPE tmp.hstore_array_type AS (map_array hstore[], str varchar);");
         execute("CREATE TABLE tmp.simple_table (i int, l int, c varchar);");
         execute("INSERT INTO tmp.simple_table (i, l, c) VALUES (1,2,'Daniel'), (2,3,'alone at'), (3,4,'home');");
         String primitive_sproc = 	"CREATE OR REPLACE FUNCTION tmp.primitives_function(OUT id smallint, OUT msg text) " +
@@ -123,7 +125,36 @@ public class AbstractTest {
         " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
 
         execute(string_null_array_sproc);
+        
+        String hstore_type_sproc = "CREATE OR REPLACE FUNCTION tmp.hstore_type_function(OUT aa tmp.hstore_type, OUT bb text) " +
+                "RETURNS record AS " +
+                "$BODY$ " +
+                "DECLARE " +
+                "BEGIN " +
+                "aa := CAST (ROW( hstore('key','val'), 'str') AS tmp.hstore_type); " +
+                "bb := 'temp';" +
+                "RETURN ; " +
+                "END " +
+                " $BODY$ " +
+                " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+        
+        execute(hstore_type_sproc);
 
+        String hstore_array_type_sproc = "CREATE OR REPLACE FUNCTION tmp.hstore_array_type_function(OUT aa tmp.hstore_array_type, OUT bb text) " +
+                "RETURNS record AS " +
+                "$BODY$ " +
+                "DECLARE " +
+                "BEGIN " +
+                "aa := CAST ( ROW( ARRAY[ hstore('key','val') ], 'str') AS tmp.hstore_array_type); " +
+                "bb := 'temp';" +
+                "RETURN ; " +
+                "END " +
+                " $BODY$ " +
+                " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+
+        execute(hstore_array_type_sproc);
+
+        
         /*
 
         execute("DROP SCHEMA IF EXISTS tmp CASCADE;");
