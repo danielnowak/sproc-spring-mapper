@@ -46,7 +46,11 @@ public class ObjectResultNode implements DbResultNode {
 				continue;
 			}
 			if (fieldDef.getType().equals("USER-DEFINED")) {
-				node = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), connection);
+                if(fieldDef.getTypeName().equals("hstore")){
+                    node = new SimpleResultNode(fieldValue, fieldDef.getName());
+                } else {
+                    node = new ObjectResultNode(fieldValue, fieldDef.getName(), fieldDef.getTypeName(), connection);
+                }
 			} else if (fieldDef.getType().equals("ARRAY")) {
 				node = new ArrayResultNode(fieldDef.getName(), fieldValue, fieldDef.getTypeName().substring(1), connection);
 			} else {

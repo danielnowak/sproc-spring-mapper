@@ -33,8 +33,14 @@ public class ArrayFieldMapper {
 			if (child instanceof ObjectResultNode) {
 				obj = ObjectFieldMapper.mapField((Class) actualTypeArguments[0], (ObjectResultNode) child);
 			} else if (child instanceof SimpleResultNode) {
-				FieldMapper mapperForClass = FieldMapperRegister.getMapperForClass((Class) actualTypeArguments[0]);
-				obj = mapperForClass.mapField(child.getValue(), (Class) actualTypeArguments[0]);
+                FieldMapper mapperForClass;
+				if(actualTypeArguments[0] instanceof ParameterizedType){
+                    mapperForClass = FieldMapperRegister.getMapperForClass((Class) ((ParameterizedType) actualTypeArguments[0]).getRawType());
+                    obj = mapperForClass.mapField(child.getValue(), (Class) ((ParameterizedType) actualTypeArguments[0]).getRawType());
+                } else {
+                    mapperForClass = FieldMapperRegister.getMapperForClass((Class) actualTypeArguments[0]);
+                    obj = mapperForClass.mapField(child.getValue(), (Class) actualTypeArguments[0]);
+                }
 			}
 			result.add(obj);
 		}
