@@ -2,6 +2,8 @@ package com.typemapper.core;
 
 public abstract class ValueTransformer<Value, Bound> {
 
-    public abstract Bound transform(String string);
-    
+    public abstract Bound unmarshalFromDb(String value);
+
+    public abstract Value marshalToDb(Bound bound);
+
 }

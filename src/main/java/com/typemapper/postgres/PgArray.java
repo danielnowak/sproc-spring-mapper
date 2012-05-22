@@ -55,14 +55,27 @@ public final class PgArray<E> implements java.sql.Array {
 
         // try to find out the element type of the collection
         Class<?> elementClass = null;
-        for (T element : collection) {
+        String type = null;
+        for (final T element : collection) {
             if (element != null) {
                 elementClass = element.getClass();
+
+                // check if the collection element is of type PgRow (complex type)
+                // in that case take the database type from the PgRow object.
+                if (PgRow.class.isAssignableFrom(elementClass)) {
+                    type = ((PgRow) element).getType();
+                }
+
                 break;
             }
         }
 
-        return new PgArray<T>(PgTypeHelper.getSQLNameForClass(elementClass), collection);
+        if (type != null) {
+            return new PgArray<T>(type, collection);
+        } else {
+
+            return new PgArray<T>(PgTypeHelper.getSQLNameForClass(elementClass), collection);
+        }
     }
 
     @Override
