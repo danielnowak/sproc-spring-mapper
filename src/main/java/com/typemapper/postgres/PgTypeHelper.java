@@ -36,7 +36,7 @@ public class PgTypeHelper {
     private static final Map<String, Integer> pgGenericTypeNameToSQLTypeMap;
 
     static {
-        Map<String, Integer> m = new HashMap<String, Integer>();
+        final Map<String, Integer> m = new HashMap<String, Integer>();
         m.put("int2", Types.SMALLINT);
         m.put("int4", Types.INTEGER);
         m.put("oid", Types.BIGINT);
@@ -63,7 +63,7 @@ public class PgTypeHelper {
     private static final Map<String, String> pgGenericTypeNameAliasMap;
 
     static {
-        Map<String, String> m = new HashMap<String, String>();
+        final Map<String, String> m = new HashMap<String, String>();
         m.put("smallint", "int2");
         m.put("integer", "int4");
         m.put("int", "int4");
@@ -106,7 +106,7 @@ public class PgTypeHelper {
     private static final Map<Class<?>, String> javaGenericClassToPgTypeNameMap;
 
     static {
-        Map<Class<?>, String> m = new HashMap<Class<?>, String>();
+        final Map<Class<?>, String> m = new HashMap<Class<?>, String>();
         m.put(short.class, "int2");
         m.put(Short.class, "int2");
         m.put(int.class, "int4");
@@ -134,7 +134,7 @@ public class PgTypeHelper {
             return null;
         }
 
-        String typeName = javaGenericClassToPgTypeNameMap.get(elementClass);
+        final String typeName = javaGenericClassToPgTypeNameMap.get(elementClass);
         return typeName;
     }
 
@@ -145,7 +145,7 @@ public class PgTypeHelper {
         }
 
         final int length = camelCaseName.length();
-        StringBuilder r = new StringBuilder(length * 2);
+        final StringBuilder r = new StringBuilder(length * 2);
 
         // myFieldName -> my_field_name
         // MyFileName -> my_field_name
@@ -166,7 +166,7 @@ public class PgTypeHelper {
                 wasUpper = true;
             } else {
                 if (wasUpper) {
-                    int p = r.length() - 2;
+                    final int p = r.length() - 2;
                     if (p > 1 && r.charAt(p) != '_') {
                         r.insert(p, '_');
                     }
@@ -182,8 +182,8 @@ public class PgTypeHelper {
     }
 
     public static final class PgTypeDataHolder {
-        private String typeName;
-        private Collection<Object> attributes;
+        private final String typeName;
+        private final Collection<Object> attributes;
 
         PgTypeDataHolder(final String typeName, final Collection<Object> attributes) {
             this.typeName = typeName;
@@ -217,14 +217,16 @@ public class PgTypeHelper {
         }
 
         final DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
-        if (databaseType != null) {
-            typeName = databaseType.name();
-        }
+
+        // use the typehint parameter
+        typeName = typeHint;
 
         if (typeName == null || typeName.isEmpty()) {
 
-            // if no annotation is given use the typehint parameter
-            typeName = typeHint;
+            // if no typehintis given use annotation
+            if (databaseType != null) {
+                typeName = databaseType.name();
+            }
         }
 
         if (typeName == null || typeName.isEmpty()) {
@@ -241,12 +243,12 @@ public class PgTypeHelper {
 
         if (connection != null) {
             try {
-                DbType dbType = DbTypeRegister.getDbType(typeName, connection);
+                final DbType dbType = DbTypeRegister.getDbType(typeName, connection);
                 dbFields = new HashMap<String, DbTypeField>();
-                for (DbTypeField dbfield : dbType.getFields()) {
+                for (final DbTypeField dbfield : dbType.getFields()) {
                     dbFields.put(dbfield.getName(), dbfield);
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new IllegalArgumentException("Could not get PG type information for " + typeName, e);
             }
         } else {
@@ -263,8 +265,8 @@ public class PgTypeHelper {
                 });
         }
 
-        for (Field f : fields) {
-            DatabaseField annotation = f.getAnnotation(DatabaseField.class);
+        for (final Field f : fields) {
+            final DatabaseField annotation = f.getAnnotation(DatabaseField.class);
             if (annotation != null) {
                 if (!f.isAccessible()) {
                     f.setAccessible(true);
@@ -273,13 +275,13 @@ public class PgTypeHelper {
                 Object value;
                 try {
                     value = f.get(obj);
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     throw new IllegalArgumentException("Could not read value of field " + f.getName(), e);
-                } catch (IllegalAccessException e) {
+                } catch (final IllegalAccessException e) {
                     throw new IllegalArgumentException("Could not read value of field " + f.getName(), e);
                 }
 
-                int fieldPosition = annotation.position();
+                final int fieldPosition = annotation.position();
                 if (fieldPosition > 0) {
                     if (resultPositionMap == null) {
                         resultPositionMap = new TreeMap<Integer, Object>();
@@ -292,7 +294,7 @@ public class PgTypeHelper {
                     if (dbFields != null) {
 
                         // we have type information from database (field positions)
-                        String dbFieldName = Mapping.getDatabaseFieldName(f, annotation.name());
+                        final String dbFieldName = Mapping.getDatabaseFieldName(f, annotation.name());
                         dbField = dbFields.get(dbFieldName);
 
                         if (dbField == null) {
@@ -319,8 +321,8 @@ public class PgTypeHelper {
             }
         }
 
-        int fieldsWithDefinedPositions = resultPositionMap == null ? 0 : resultPositionMap.size();
-        int fieldsWithUndefinedPositions = resultList == null ? 0 : resultList.size();
+        final int fieldsWithDefinedPositions = resultPositionMap == null ? 0 : resultPositionMap.size();
+        final int fieldsWithUndefinedPositions = resultList == null ? 0 : resultList.size();
         if (fieldsWithDefinedPositions > 0 && fieldsWithUndefinedPositions > 0) {
             throw new IllegalArgumentException("Class " + clazz.getName()
                     + " should have all its database related fields marked with correct names or positions");
@@ -347,7 +349,7 @@ public class PgTypeHelper {
             return "NULL";
         }
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         final Class<?> clazz = o.getClass();
         if (clazz == Boolean.TYPE || clazz == Boolean.class) {
             sb.append(((Boolean) o) ? 't' : 'f');
@@ -388,7 +390,7 @@ public class PgTypeHelper {
             // here we do not need to know the name of the PG type
             try {
                 sb.append(asPGobject(o, null, connection).toString());
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 throw new IllegalArgumentException("Could not serialize object of class " + clazz.getName(), e);
             }
         }

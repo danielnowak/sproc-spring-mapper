@@ -162,17 +162,17 @@ public class Mapping {
      */
     private static String camelCaseToUnderScore(final String str) {
         final StringBuilder result = new StringBuilder();
-        char[] c = str.toCharArray();
+        final char[] c = str.toCharArray();
         int tokenStart = 0;
         int currentType = Character.getType(c[tokenStart]);
         for (int pos = tokenStart + 1; pos < c.length; pos++) {
-            int type = Character.getType(c[pos]);
+            final int type = Character.getType(c[pos]);
             if (type == currentType) {
                 continue;
             }
 
             if ((type == Character.LOWERCASE_LETTER) && (currentType == Character.UPPERCASE_LETTER)) {
-                int newTokenStart = pos - 1;
+                final int newTokenStart = pos - 1;
                 if (newTokenStart != tokenStart) {
                     if (result.length() > 0) {
                         result.append('_');
@@ -238,7 +238,10 @@ public class Mapping {
             if (setter != null) {
                 setter.invoke(target, value);
             } else {
+                final boolean accessible = getField().isAccessible();
+                getField().setAccessible(true);
                 getField().set(target, value);
+                getField().setAccessible(accessible);
             }
 
         }
