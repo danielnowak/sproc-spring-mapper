@@ -217,16 +217,14 @@ public class PgTypeHelper {
         }
 
         final DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
-
-        // use the typehint parameter
-        typeName = typeHint;
+        if (databaseType != null) {
+            typeName = databaseType.name();
+        }
 
         if (typeName == null || typeName.isEmpty()) {
 
-            // if no typehintis given use annotation
-            if (databaseType != null) {
-                typeName = databaseType.name();
-            }
+            // if no annotation is given use the typehint parameter
+            typeName = typeHint;
         }
 
         if (typeName == null || typeName.isEmpty()) {
