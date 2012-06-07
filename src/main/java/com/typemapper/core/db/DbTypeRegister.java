@@ -11,7 +11,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import org.springframework.util.StringUtils;
+
 public class DbTypeRegister {
+
+    private static final Logger LOG = Logger.getLogger(DbTypeRegister.class);
 
     private static Map<String, DbTypeRegister> registers = null;
 
@@ -56,6 +62,14 @@ public class DbTypeRegister {
 
         final String searchPathStr = searchPathResult.getString(1);
         return Arrays.asList(searchPathStr.split("\\s*,\\s*"));
+    }
+
+    public List<String> getSearchPath() {
+        return searchPath;
+    }
+
+    public Map<String, DbType> getTypes() {
+        return types;
     }
 
     private void addField(final String typeSchema, final String typeName, final String fieldName,
@@ -114,7 +128,12 @@ public class DbTypeRegister {
         }
 
         if (!registers.containsKey(name)) {
-            registers.put(name, new DbTypeRegister(connection));
+            final DbTypeRegister register = new DbTypeRegister(connection);
+            registers.put(name, register);
+
+            final String searchPath = StringUtils.arrayToDelimitedString(register.getSearchPath().toArray(), ", ");
+            LOG.info("Initialized type register '" + name + "' with search path '" + searchPath + "' and "
+                    + register.getTypes().size() + " types");
         }
 
         return registers;
