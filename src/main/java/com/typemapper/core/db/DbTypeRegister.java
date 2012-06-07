@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,17 +17,15 @@ public class DbTypeRegister {
 
     private Map<String, DbType> types = null;
     private Map<String, List<String>> typeNameToFQN = null;
-    private String searchPath = null;
+    private List<String> searchPath = null;
 
     public DbTypeRegister(final Connection connection) throws SQLException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
-            final ResultSet searchPathResult = connection.createStatement().executeQuery("show search_path;");
-            searchPathResult.next();
-            searchPath = searchPathResult.getString(1);
-            this.typeNameToFQN = new HashMap<String, List<String>>();
-            this.types = new HashMap<String, DbType>();
+            searchPath = getSearchPath(connection);
+            typeNameToFQN = new HashMap<String, List<String>>();
+            types = new HashMap<String, DbType>();
             statement = connection.prepareStatement(
                     "SELECT udt_schema, udt_name, attribute_name, ordinal_position, data_type, attribute_udt_name FROM information_schema.attributes");
             resultSet = statement.executeQuery();
@@ -49,6 +48,14 @@ public class DbTypeRegister {
                 statement.close();
             }
         }
+    }
+
+    public static List<String> getSearchPath(final Connection connection) throws SQLException {
+        final ResultSet searchPathResult = connection.createStatement().executeQuery("show search_path;");
+        searchPathResult.next();
+
+        final String searchPathStr = searchPathResult.getString(1);
+        return Arrays.asList(searchPathStr.split("\\s*,\\s*"));
     }
 
     private void addField(final String typeSchema, final String typeName, final String fieldName,
@@ -87,15 +94,11 @@ public class DbTypeRegister {
         for (final DbTypeRegister register : registry.values()) {
             final List<String> list = register.typeNameToFQN.get(name);
             if (list != null) {
-                if (list.size() == 1) {
-                    return register.types.get(list.get(0));
-                } else {
-                    final String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-                    if (fqName != null) {
-                        final DbType result = register.types.get(fqName);
-                        if (result != null) {
-                            return result;
-                        }
+                final String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+                if (fqName != null) {
+                    final DbType result = register.types.get(fqName);
+                    if (result != null) {
+                        return result;
                     }
                 }
             }
