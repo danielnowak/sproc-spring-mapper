@@ -108,11 +108,15 @@ public class DbTypeRegister {
         for (final DbTypeRegister register : registry.values()) {
             final List<String> list = register.typeNameToFQN.get(name);
             if (list != null) {
-                final String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
-                if (fqName != null) {
-                    final DbType result = register.types.get(fqName);
-                    if (result != null) {
-                        return result;
+                if (list.size() == 1) {
+                    return register.types.get(list.get(0));
+                } else {
+                    final String fqName = SearchPathSchemaFilter.filter(list, register.searchPath);
+                    if (fqName != null) {
+                        final DbType result = register.types.get(fqName);
+                        if (result != null) {
+                            return result;
+                        }
                     }
                 }
             }
