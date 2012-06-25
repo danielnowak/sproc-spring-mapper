@@ -136,7 +136,10 @@ public class TypeMapper<ITEM> implements ParameterizedRowMapper<ITEM> {
             try {
                 final DbResultNode node = tree.getChildByName(mapping.getName());
                 if (node == null) {
-                    LOG.error("Could not map property " + mapping.getName() + " of class " + resultClass
+
+                    // this may be okay - if any return value is NULL, we will reach this path.
+                    // to classify and mark this as an error, we need more information.
+                    LOG.debug("Could not map property " + mapping.getName() + " of class " + resultClass
                             .getSimpleName() + ": field not in result tree");
                     continue;
                 }

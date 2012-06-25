@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FieldMapperRegister {
 
@@ -62,6 +63,9 @@ public class FieldMapperRegister {
 
         final FieldMapper nullListMapper = new NullListFieldMapper();
         FieldMapperRegister.register(List.class, nullListMapper);
+
+        final FieldMapper nullSetMapper = new NullSetFieldMapper();
+        FieldMapperRegister.register(Set.class, nullSetMapper);
     }
 
     @SuppressWarnings("rawtypes")

@@ -206,6 +206,11 @@ public class PgTypeHelper {
 
     public static PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint,
             final Connection connection) {
+        return getObjectAttributesForPgSerialization(obj, typeHint, connection, false);
+    }
+
+    public static PgTypeDataHolder getObjectAttributesForPgSerialization(final Object obj, final String typeHint,
+            final Connection connection, final boolean forceTypeHint) {
         if (obj == null) {
             throw new NullPointerException();
         }
@@ -221,9 +226,10 @@ public class PgTypeHelper {
             typeName = databaseType.name();
         }
 
-        if (typeName == null || typeName.isEmpty()) {
+        if (typeName == null || typeName.isEmpty() || forceTypeHint) {
 
-            // if no annotation is given use the typehint parameter
+            // if no annotation is given use the type hint parameter
+            // use type hint if forceTypeHint is set to true
             typeName = typeHint;
         }
 
@@ -373,7 +379,7 @@ public class PgTypeHelper {
                 sb.append(PgArray.ARRAY((Object[]) o).toString());
             }
         } else if (clazz.isEnum()) {
-            sb.append(((Enum) o).name());
+            sb.append(((Enum<?>) o).name());
         } else if (o instanceof Date) {
             sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format((Date) o));
         } else if (o instanceof Map) {
@@ -409,4 +415,8 @@ public class PgTypeHelper {
         return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, connection), connection);
     }
 
+    public static PgRow asPGobject(final Object o, final String typeHint, final Connection connection,
+            final boolean forceTypeHint) throws SQLException {
+        return new PgRow(getObjectAttributesForPgSerialization(o, typeHint, connection, forceTypeHint), connection);
+    }
 }

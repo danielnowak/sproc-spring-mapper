@@ -34,9 +34,9 @@ public class ParseUtils {
 
         // This is a simple copy-paste from the ROW processing code, and
         // strictly speaking is not quite correct for PostgreSQL ARRAYs
-        List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<String>();
 
-        char[] c = value.toCharArray();
+        final char[] c = value.toCharArray();
 
         StringBuilder element = new StringBuilder(appendStringSize);
 
@@ -45,7 +45,7 @@ public class ParseUtils {
         int i = 1;
         while (c[i] != '}') {
             if (c[i] == ',') {
-                char nextChar = c[i + 1];
+                final char nextChar = c[i + 1];
                 if (nextChar == ',' || nextChar == '}') {
 
                     throw new ArrayParserException("Empty array value at position " + i + " should be quoted: "
@@ -58,7 +58,7 @@ public class ParseUtils {
 
                 boolean insideQuote = true;
                 while (insideQuote) {
-                    char nextChar = c[i + 1];
+                    final char nextChar = c[i + 1];
                     if (c[i] == '\"') {
                         if (nextChar == ',' || nextChar == '}') {
                             result.add(element.toString());
@@ -106,16 +106,23 @@ public class ParseUtils {
         return postgresROW2StringList(value, 16);
     }
 
-    public static final List<String> postgresROW2StringList(final String value, final int appendStringSize)
+    public static final List<String> postgresROW2StringList(String value, final int appendStringSize)
         throws RowParserException {
-        if (!(value.startsWith("(") && value.endsWith(")"))) {
+        if ((value.startsWith("(") && !value.endsWith(")")) || (!value.startsWith("(") && value.endsWith(")"))) {
             throw new RowParserException("postgresROW2StringList() ROW must begin with '(' and ends with ')': "
                     + value);
         }
 
-        List<String> result = new ArrayList<String>();
+        if (!(value.startsWith("(") || value.endsWith(")"))) {
 
-        char[] c = value.toCharArray();
+            // in case both elements are missing, we add them for processing:
+            // this will be the case for enum types:
+            value = "(" + value + ")";
+        }
+
+        final List<String> result = new ArrayList<String>();
+
+        final char[] c = value.toCharArray();
 
         StringBuilder element = new StringBuilder(appendStringSize);
 
@@ -124,7 +131,7 @@ public class ParseUtils {
         int i = 1;
         while (c[i] != ')') {
             if (c[i] == ',') {
-                char nextChar = c[i + 1];
+                final char nextChar = c[i + 1];
                 if (c[i - 1] == '(') {
 
                     // we have an empty first position, that is we have a NULL value
@@ -141,7 +148,7 @@ public class ParseUtils {
 
                 boolean insideQuote = true;
                 while (insideQuote) {
-                    char nextChar = c[i + 1];
+                    final char nextChar = c[i + 1];
                     if (c[i] == '\"') {
                         if (nextChar == ',' || nextChar == ')') {
                             result.add(element.toString());
@@ -190,7 +197,7 @@ public class ParseUtils {
             return null;
         }
 
-        String b = s.trim().toLowerCase(Locale.US).intern();
+        final String b = s.trim().toLowerCase(Locale.US).intern();
         for (int i = 0; i < 3; i++) {
             if (b.equals(trueList[i])) {
                 return Boolean.TRUE;
