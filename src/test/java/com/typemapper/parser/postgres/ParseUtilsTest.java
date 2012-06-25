@@ -16,20 +16,17 @@ public class ParseUtilsTest {
 
     @Test(expected = ArrayParserException.class)
     public void testPostgresArray2StringListEmptyValue() throws ArrayParserException {
-        List<String> fieldValues;
-        fieldValues = ParseUtils.postgresArray2StringList("{a,}");
+        ParseUtils.postgresArray2StringList("{a,}");
     }
 
     @Test(expected = ArrayParserException.class)
     public void testPostgresArray2StringListEmptyValue2() throws ArrayParserException {
-        List<String> fieldValues;
-        fieldValues = ParseUtils.postgresArray2StringList("{,,}");
+        ParseUtils.postgresArray2StringList("{,,}");
     }
 
     @Test(expected = ArrayParserException.class)
     public void testPostgresArray2StringListEmptyValue3() throws ArrayParserException {
-        List<String> fieldValues;
-        fieldValues = ParseUtils.postgresArray2StringList("{a,,b}");
+        ParseUtils.postgresArray2StringList("{a,,b}");
     }
 
     @Test
