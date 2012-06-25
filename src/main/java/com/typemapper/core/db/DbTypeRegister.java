@@ -32,18 +32,43 @@ public class DbTypeRegister {
             searchPath = getSearchPath(connection);
             typeNameToFQN = new HashMap<String, List<String>>();
             types = new HashMap<String, DbType>();
+
+            //J-
             statement = connection.prepareStatement(
-                    "SELECT udt_schema, udt_name, attribute_name, ordinal_position, data_type, attribute_udt_name FROM information_schema.attributes");
+                    "select tn.nspname as type_schema, " +
+                    "t.typname as type_name, " +
+                    "t.typtype as type_type, " +
+                    "a.attname as att_name, " +
+                    "(CASE WHEN ((t2.typelem <> (0)::oid) AND (t2.typlen = -1)) " +
+                    "THEN 'ARRAY'::text  WHEN (tn2.nspname = 'pg_catalog'::name) " +
+                    "THEN format_type(a.atttypid, NULL::integer) " +
+                    "ELSE 'USER-DEFINED'::text END) as att_type, " +
+                    "t2.typname, " +
+                    "a.attnum as att_position, " +
+                    "t.typarray > 0 as is_array " +
+                    "from pg_type as t " +
+                    "join pg_namespace as tn on t.typnamespace = tn.oid " +
+                    "left join pg_attribute as a on a.attrelid = t.typrelid and a.attnum > 0 and not a.attisdropped " +
+                    "left join pg_type as t2 on a.atttypid = t2.oid " +
+                    "left join pg_namespace as tn2 on t2.typnamespace = tn2.oid " +
+                    "where t.typtype in ( 'c', 'e' ) " +
+                    "and tn.nspname not in ( 'pg_catalog', 'pg_toast', 'information_schema' ) " +
+                    "and t.typowner > 0 " +
+                    "order by t.typowner, type_schema, type_name, att_position");
+            //J+
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 int i = 1;
                 final String typeSchema = resultSet.getString(i++);
                 final String typeName = resultSet.getString(i++);
+                final String typeType = resultSet.getString(i++);
                 final String fieldName = resultSet.getString(i++);
-                final int fieldPosition = resultSet.getInt(i++);
                 final String fieldType = resultSet.getString(i++);
                 final String fieldTypeName = resultSet.getString(i++);
-                addField(typeSchema, typeName, fieldName, fieldPosition, fieldType, fieldTypeName);
+                final int fieldPosition = resultSet.getInt(i++);
+                final boolean isArray = resultSet.getBoolean(i++);
+
+                addField(typeSchema, typeName, fieldName, fieldPosition, fieldType, fieldTypeName, typeType, isArray);
             }
         } finally {
             if (resultSet != null) {
@@ -73,7 +98,8 @@ public class DbTypeRegister {
     }
 
     private void addField(final String typeSchema, final String typeName, final String fieldName,
-            final int fieldPosition, final String fieldType, final String fieldTypeName) {
+            final int fieldPosition, final String fieldType, final String fieldTypeName, final String typeType,
+            final boolean isArray) {
         final String typeId = getTypeIdentifier(typeSchema, typeName);
         DbType type = types.get(typeId);
         if (type == null) {
@@ -82,7 +108,12 @@ public class DbTypeRegister {
 
         }
 
-        type.addField(new DbTypeField(fieldName, fieldPosition, fieldType, fieldTypeName));
+        // do we have an enum?
+        if ("e".equals(typeType)) {
+            type.addField(new DbTypeField(typeName, 1, "enum", "enum"));
+        } else {
+            type.addField(new DbTypeField(fieldName, fieldPosition, fieldType, fieldTypeName));
+        }
     }
 
     private void addType(final DbType type) {
