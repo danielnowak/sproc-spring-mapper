@@ -48,10 +48,11 @@ public class DbTypeRegister {
                     "t.typarray > 0 as is_array " +
                     "from pg_type as t " +
                     "join pg_namespace as tn on t.typnamespace = tn.oid " +
+                    "left join pg_class c on t.typrelid = c.oid "+
                     "left join pg_attribute as a on a.attrelid = t.typrelid and a.attnum > 0 and not a.attisdropped " +
                     "left join pg_type as t2 on a.atttypid = t2.oid " +
                     "left join pg_namespace as tn2 on t2.typnamespace = tn2.oid " +
-                    "where t.typtype in ( 'c', 'e' ) " +
+                    "where (t.typtype = 'e' OR (t.typtype = 'c' AND c.relkind = 'c'::char))" +
                     "and tn.nspname not in ( 'pg_catalog', 'pg_toast', 'information_schema' ) " +
                     "and t.typowner > 0 " +
                     "order by t.typowner, type_schema, type_name, att_position");
