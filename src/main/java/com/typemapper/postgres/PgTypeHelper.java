@@ -27,9 +27,11 @@ import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.DatabaseType;
 
 import com.typemapper.core.Mapping;
+import com.typemapper.core.ValueTransformer;
 import com.typemapper.core.db.DbType;
 import com.typemapper.core.db.DbTypeField;
 import com.typemapper.core.db.DbTypeRegister;
+import com.typemapper.core.fieldMapper.AnyTransformer;
 
 public class PgTypeHelper {
 
@@ -285,6 +287,9 @@ public class PgTypeHelper {
                     throw new IllegalArgumentException("Could not read value of field " + f.getName(), e);
                 }
 
+                // here we need apply any value/type transformation before generating the
+                value = applyTransformer(f, annotation, value);
+
                 final int fieldPosition = annotation.position();
                 if (fieldPosition > 0) {
                     if (resultPositionMap == null) {
@@ -337,6 +342,25 @@ public class PgTypeHelper {
         } else {
             return new PgTypeDataHolder(typeName, Collections.unmodifiableCollection(resultList));
         }
+    }
+
+    private static Object applyTransformer(final Field f, final DatabaseField annotation, Object value) {
+        if (annotation.transformer() != null && !AnyTransformer.class.isAssignableFrom(annotation.transformer())) {
+            try {
+                @SuppressWarnings("unchecked")
+                final ValueTransformer<Object, Object> transformer = (ValueTransformer<Object, Object>)
+                    annotation.transformer().newInstance();
+
+                // transform the value by the transformer into a database value:
+                value = transformer.marshalToDb(value);
+            } catch (final InstantiationException e) {
+                throw new IllegalArgumentException("Could not instantiate transformer of field " + f.getName(), e);
+            } catch (final IllegalAccessException e) {
+                throw new IllegalArgumentException("Could not instantiate transformer of field " + f.getName(), e);
+            }
+        }
+
+        return value;
     }
 
     public static String toPgString(final Object o) {
