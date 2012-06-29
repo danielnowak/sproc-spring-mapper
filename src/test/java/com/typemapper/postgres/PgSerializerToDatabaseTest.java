@@ -32,7 +32,9 @@ import com.typemapper.AbstractTest;
 import com.typemapper.namedresult.results.ClassWithEnum;
 import com.typemapper.namedresult.results.ClassWithPrimitives;
 import com.typemapper.namedresult.results.ClassWithPrimitivesAndMap;
+import com.typemapper.namedresult.results.ClassWithSimpleTransformers;
 import com.typemapper.namedresult.results.Enumeration;
+import com.typemapper.namedresult.results.GenderCode;
 
 @RunWith(Parameterized.class)
 public class PgSerializerToDatabaseTest extends AbstractTest {
@@ -167,6 +169,14 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                         PgTypeHelper.asPGobject(new ClassWithEnum(Enumeration.VALUE_1, Enumeration.VALUE_2)),
                         "(VALUE_1,VALUE_2)", Types.OTHER
                     },
+
+                    /* 17 */
+                    {
+                        PgTypeHelper.asPGobject(
+                            new ClassWithSimpleTransformers(GenderCode.MALE, GenderCode.MALE, GenderCode.MALE, "path",
+                                "listElement1", "listElement2", "listElement3")),
+                        "(path,homme,0,MALE,listElement1#listElement2#listElement3)", Types.OTHER
+                    },
                 });
     }
 
@@ -184,6 +194,11 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
 
         // type with positional members:
         execute("CREATE TYPE tmp.additional_type_with_positions AS (i int, l bigint, c text, h hstore);");
+
+        // type with gender code
+        execute("CREATE TYPE gender_enum_type AS ENUM ('MALE', 'FEMALE');");
+        execute(
+            "CREATE TYPE tmp.class_with_simple_transformers AS (file_column text, gender_as_code text, gender_as_int integer, gender_as_name gender_enum_type, string_list_with_separtion_char text);");
     }
 
     @After
