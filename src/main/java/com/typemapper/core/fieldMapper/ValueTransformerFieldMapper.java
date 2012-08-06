@@ -11,6 +11,10 @@ public class ValueTransformerFieldMapper implements FieldMapper {
         this.valueTransformer = valueTransformer.newInstance();
     }
 
+    public ValueTransformerFieldMapper(final ValueTransformer<?, ?> valueTransformer) {
+        this.valueTransformer = valueTransformer;
+    }
+
     @Override
     public Object mapField(final String string, final Class<?> clazz) {
         if (string == null) {

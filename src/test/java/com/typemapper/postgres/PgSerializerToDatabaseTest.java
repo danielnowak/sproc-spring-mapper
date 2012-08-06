@@ -30,11 +30,13 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import com.typemapper.AbstractTest;
 
 import com.typemapper.namedresult.results.ClassWithEnum;
+import com.typemapper.namedresult.results.ClassWithPredefinedTransformer;
 import com.typemapper.namedresult.results.ClassWithPrimitives;
 import com.typemapper.namedresult.results.ClassWithPrimitivesAndMap;
 import com.typemapper.namedresult.results.ClassWithSimpleTransformers;
 import com.typemapper.namedresult.results.Enumeration;
 import com.typemapper.namedresult.results.GenderCode;
+import com.typemapper.namedresult.transformer.Hans;
 
 @RunWith(Parameterized.class)
 public class PgSerializerToDatabaseTest extends AbstractTest {
@@ -177,6 +179,24 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                                 "listElement1", "listElement2", "listElement3")),
                         "(path,homme,0,MALE,listElement1#listElement2#listElement3)", Types.OTHER
                     },
+
+                    /* 18 */
+                    {
+                        PgTypeHelper.asPGobject(
+                            new ClassWithPredefinedTransformer(
+                                new Hans("This is a complex object using an implicit transformer."))),
+                        "(\"This is a complex object using an implicit transformer.\",{})", Types.OTHER
+                    },
+
+                    /* 19 */
+                    {
+                        PgTypeHelper.asPGobject(
+                            new ClassWithPredefinedTransformer(
+                                new Hans("This is a complex object using an implicit transformer."),
+                                new Hans("list element 1"), new Hans("list element 2"))),
+                        "(\"This is a complex object using an implicit transformer.\",\"{\"\"list element 1\"\",\"\"list element 2\"\"}\")",
+                        Types.OTHER
+                    },
                 });
     }
 
@@ -194,6 +214,9 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
 
         // type with positional members:
         execute("CREATE TYPE tmp.additional_type_with_positions AS (i int, l bigint, c text, h hstore);");
+
+        // transformed type:
+        execute("CREATE TYPE tmp.class_with_predefined_transformer AS (a text, b text[]);");
 
         // type with gender code
         execute("CREATE TYPE gender_enum_type AS ENUM ('MALE', 'FEMALE');");
