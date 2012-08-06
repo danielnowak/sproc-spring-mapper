@@ -32,6 +32,7 @@ import com.typemapper.core.db.DbType;
 import com.typemapper.core.db.DbTypeField;
 import com.typemapper.core.db.DbTypeRegister;
 import com.typemapper.core.fieldMapper.AnyTransformer;
+import com.typemapper.core.fieldMapper.GlobalValueTransformerRegistry;
 
 public class PgTypeHelper {
 
@@ -345,6 +346,8 @@ public class PgTypeHelper {
     }
 
     private static Object applyTransformer(final Field f, final DatabaseField annotation, Object value) {
+
+        // check if any transformer is explicitly defined:
         if (annotation.transformer() != null && !AnyTransformer.class.isAssignableFrom(annotation.transformer())) {
             try {
                 @SuppressWarnings("unchecked")
@@ -372,13 +375,22 @@ public class PgTypeHelper {
      *
      * @param  o  object to be serialized
      */
-    public static String toPgString(final Object o, final Connection connection) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static String toPgString(Object o, final Connection connection) {
         if (o == null) {
             return "NULL";
         }
 
         final StringBuilder sb = new StringBuilder();
         final Class<?> clazz = o.getClass();
+
+        // check if there is a value transformer in the registry to transform this kind of object:
+        final ValueTransformer valueTransformer = GlobalValueTransformerRegistry.getValueTransformerForClass(clazz);
+        if (valueTransformer != null) {
+            o = valueTransformer.marshalToDb(o);
+            return toPgString(o, connection);
+        }
+
         if (clazz == Boolean.TYPE || clazz == Boolean.class) {
             sb.append(((Boolean) o) ? 't' : 'f');
         } else if (clazz.isPrimitive() || o instanceof Number) {

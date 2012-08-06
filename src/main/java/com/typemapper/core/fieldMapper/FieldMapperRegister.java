@@ -3,15 +3,17 @@ package com.typemapper.core.fieldMapper;
 import java.math.BigDecimal;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.typemapper.core.ValueTransformer;
 
 public class FieldMapperRegister {
 
     @SuppressWarnings({ "rawtypes" })
-    private static final Map<Class, FieldMapper> register = new HashMap<Class, FieldMapper>();
+    private static final Map<Class, FieldMapper> register = new ConcurrentHashMap<Class, FieldMapper>();
 
     static {
         final FieldMapper dateFieldMapper = new DateFieldMapper();
@@ -75,11 +77,26 @@ public class FieldMapperRegister {
 
     @SuppressWarnings("rawtypes")
     public static FieldMapper getMapperForClass(final Class clazz) {
-        if (clazz.getEnumConstants() != null) {
-            return register.get(Enum.class);
+        FieldMapper fieldMapper = register.get(clazz);
+
+        if (fieldMapper == null) {
+
+            // check if there is a global field mapper defined in the value transformer register:
+            final ValueTransformer<?, ?> valueTransformer = GlobalValueTransformerRegistry.getValueTransformerForClass(
+                    clazz);
+            if (valueTransformer != null) {
+                fieldMapper = new ValueTransformerFieldMapper(valueTransformer);
+                register.put(clazz, fieldMapper);
+            }
         }
 
-        return register.get(clazz);
+        if (fieldMapper == null) {
+            if (clazz.getEnumConstants() != null) {
+                fieldMapper = register.get(Enum.class);
+            }
+        }
+
+        return fieldMapper;
     }
 
 }
