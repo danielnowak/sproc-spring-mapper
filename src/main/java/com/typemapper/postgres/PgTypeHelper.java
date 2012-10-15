@@ -21,11 +21,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.persistence.Column;
+
 import org.postgresql.util.PGobject;
 
 import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.DatabaseType;
 
+import com.typemapper.core.DatabaseFieldDescriptor;
 import com.typemapper.core.Mapping;
 import com.typemapper.core.ValueTransformer;
 import com.typemapper.core.db.DbType;
@@ -273,8 +276,8 @@ public class PgTypeHelper {
         }
 
         for (final Field f : fields) {
-            final DatabaseField annotation = f.getAnnotation(DatabaseField.class);
-            if (annotation != null) {
+            final DatabaseFieldDescriptor databaseFieldDescriptor = getDatabaseFieldDescriptor(f);
+            if (databaseFieldDescriptor != null) {
                 if (!f.isAccessible()) {
                     f.setAccessible(true);
                 }
@@ -289,9 +292,9 @@ public class PgTypeHelper {
                 }
 
                 // here we need apply any value/type transformation before generating the
-                value = applyTransformer(f, annotation, value);
+                value = applyTransformer(f, databaseFieldDescriptor, value);
 
-                final int fieldPosition = annotation.position();
+                final int fieldPosition = databaseFieldDescriptor.getPosition();
                 if (fieldPosition > 0) {
                     if (resultPositionMap == null) {
                         resultPositionMap = new TreeMap<Integer, Object>();
@@ -304,7 +307,7 @@ public class PgTypeHelper {
                     if (dbFields != null) {
 
                         // we have type information from database (field positions)
-                        final String dbFieldName = Mapping.getDatabaseFieldName(f, annotation.name());
+                        final String dbFieldName = Mapping.getDatabaseFieldName(f, databaseFieldDescriptor.getName());
                         dbField = dbFields.get(dbFieldName);
 
                         if (dbField == null) {
@@ -345,14 +348,40 @@ public class PgTypeHelper {
         }
     }
 
-    private static Object applyTransformer(final Field f, final DatabaseField annotation, Object value) {
+    /**
+     * get the database field annotation from a given field. This function will check against {@link Column} definition
+     * so that both annotations can be used to mark a DatabaseField.
+     *
+     * @param   field  the field to be checked
+     *
+     * @return  a {@link DatabaseFieldDescriptor} based on a found {@link DatabaseField} or {@link Column}
+     */
+    public static DatabaseFieldDescriptor getDatabaseFieldDescriptor(final Field field) {
+        final DatabaseField databaseField = field.getAnnotation(DatabaseField.class);
+        if (databaseField != null) {
+            return new DatabaseFieldDescriptor(databaseField);
+        } else {
+
+            // do we have a column definition?
+            final Column column = field.getAnnotation(Column.class);
+            if (column != null) {
+                return new DatabaseFieldDescriptor(column);
+            }
+        }
+
+        return null;
+    }
+
+    private static Object applyTransformer(final Field f, final DatabaseFieldDescriptor databaseFieldDescriptor,
+            Object value) {
 
         // check if any transformer is explicitly defined:
-        if (annotation.transformer() != null && !AnyTransformer.class.isAssignableFrom(annotation.transformer())) {
+        if (databaseFieldDescriptor.getTransformer() != null
+                && !AnyTransformer.class.isAssignableFrom(databaseFieldDescriptor.getTransformer())) {
             try {
                 @SuppressWarnings("unchecked")
                 final ValueTransformer<Object, Object> transformer = (ValueTransformer<Object, Object>)
-                    annotation.transformer().newInstance();
+                    databaseFieldDescriptor.getTransformer().newInstance();
 
                 // transform the value by the transformer into a database value:
                 value = transformer.marshalToDb(value);

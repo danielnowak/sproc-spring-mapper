@@ -53,6 +53,15 @@ public class AbstractTest {
         execute("CREATE TABLE tmp.simple_table (i int, l int, c varchar);");
         execute("INSERT INTO tmp.simple_table (i, l, c) VALUES (1,2,'Daniel'), (2,3,'alone at'), (3,4,'home');");
 
+        execute("CREATE TABLE tmp.test_time(lt timestamp without time zone, gt timestamp with time zone, zone text);");
+        execute(
+            "INSERT INTO tmp.test_time(lt, gt, zone) VALUES ('2012-07-30 16:00:00', '2012-07-30 14:00:00+0', 'utc'), ('2012-07-30 18:00:00', '2012-07-30 18:00:00+2', 'cest'), ('2012-07-30 21:00:00', '2012-07-30 10:00:00-09', 'japan');");
+
+        final String test_time_sproc =
+            "CREATE OR REPLACE FUNCTION tmp.test_time_function(OUT id smallint, OUT msg text) " + "RETURNS record AS "
+                + "$BODY$ " + "DECLARE " + "BEGIN " + "id  := 0; " + "msg := 'result_code'; " + "RETURN; " + "END "
+                + " $BODY$ " + " LANGUAGE 'plpgsql' VOLATILE SECURITY DEFINER ";
+
         final String primitive_sproc =
             "CREATE OR REPLACE FUNCTION tmp.primitives_function(OUT id smallint, OUT msg text) " + "RETURNS record AS "
                 + "$BODY$ " + "DECLARE " + "BEGIN " + "id  := 0; " + "msg := 'result_code'; " + "RETURN; " + "END "

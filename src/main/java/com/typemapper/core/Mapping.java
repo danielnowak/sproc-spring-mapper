@@ -1,5 +1,7 @@
 package com.typemapper.core;
 
+import static com.typemapper.postgres.PgTypeHelper.getDatabaseFieldDescriptor;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.typemapper.annotations.DatabaseField;
 import com.typemapper.annotations.Embed;
 
 import com.typemapper.core.fieldMapper.AnyTransformer;
@@ -19,6 +20,7 @@ import com.typemapper.core.fieldMapper.FieldMapperRegister;
 import com.typemapper.core.fieldMapper.ValueTransformerFieldMapper;
 
 import com.typemapper.exception.NotsupportedTypeException;
+
 
 public class Mapping {
 
@@ -68,10 +70,10 @@ public class Mapping {
         }
 
         for (final Field field : fields) {
-            final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
+            final DatabaseFieldDescriptor annotation = getDatabaseFieldDescriptor(field);
             if (annotation != null) {
-                final String databaseFieldName = getDatabaseFieldName(field, annotation.name());
-                result.add(new Mapping(field, databaseFieldName, embed, embedField, annotation.transformer()));
+                final String databaseFieldName = getDatabaseFieldName(field, annotation.getName());
+                result.add(new Mapping(field, databaseFieldName, embed, embedField, annotation.getTransformer()));
             }
 
             if (!embed) {
@@ -199,13 +201,10 @@ public class Mapping {
         return field;
     }
 
-    private DatabaseField getAnnotation() {
-        return field.getAnnotation(DatabaseField.class);
-    }
-
     public FieldMapper getFieldMapper() throws NotsupportedTypeException, InstantiationException,
         IllegalAccessException {
-        if ((getAnnotation() != null) && (getAnnotation().transformer() != null)) {
+        final DatabaseFieldDescriptor databaseFieldDescriptor = getDatabaseFieldDescriptor(field);
+        if ((databaseFieldDescriptor != null) && (databaseFieldDescriptor.getTransformer() != null)) {
             if (!AnyTransformer.class.equals(getValueTransformer())) {
                 return new ValueTransformerFieldMapper(getValueTransformer());
             }
