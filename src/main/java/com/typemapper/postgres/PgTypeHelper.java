@@ -44,6 +44,9 @@ public class PgTypeHelper {
 
     private static final Map<String, Integer> pgGenericTypeNameToSQLTypeMap;
 
+    private static final PostgresJDBCDriverReusedTimestampUtils postgresJDBCDriverReusedTimestampUtils =
+        new PostgresJDBCDriverReusedTimestampUtils();
+
     static {
         final Map<String, Integer> m = new HashMap<String, Integer>();
         m.put("int2", Types.SMALLINT);
@@ -451,18 +454,14 @@ public class PgTypeHelper {
         } else if (o instanceof Date) {
             final Timestamp tmpd = new Timestamp(((Date) o).getTime());
             if (connection instanceof BaseConnection) {
+
+                // if we do have a valid postgresql connection use this one:
                 final BaseConnection postgresBaseConnection = (BaseConnection) connection;
                 sb.append(postgresBaseConnection.getTimestampUtils().toString(null, tmpd));
             } else {
-                if (connection != null) {
-                    throw new IllegalArgumentException("no valid implementation for date for given jdbc driver.");
-                } else {
 
-                    // we do ignore a null connection for testing purpose and use a new TimestampUtils instance here:
-                    final PostgresJDBCDriverReusedTimestampUtils postgresJDBCDriverReusedTimestampUtils =
-                        new PostgresJDBCDriverReusedTimestampUtils();
-                    sb.append(postgresJDBCDriverReusedTimestampUtils.toString(null, tmpd));
-                }
+                // no valid postgresql connection - use that one:
+                sb.append(postgresJDBCDriverReusedTimestampUtils.toString(null, tmpd));
             }
         } else if (o instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) o;
