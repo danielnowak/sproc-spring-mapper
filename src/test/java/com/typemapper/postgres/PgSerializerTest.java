@@ -11,6 +11,7 @@ import java.sql.SQLException;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -43,10 +44,13 @@ public class PgSerializerTest {
      * Collection, each array element corresponds to a parameter in the
      * constructor.
      */
+    @SuppressWarnings("deprecation")
     @Parameters
     public static Collection<Object[]> generateData() throws SQLException {
         return Arrays.asList(
                 new Object[][] {
+                    {new Date(112, 11, 1, 6, 6, 6), "2012-12-01 06:06:06.000000 +01:00:00"},
+                    {new Date(112, 9, 1, 6, 6, 6), "2012-10-01 06:06:06.000000 +02:00:00"},
                     {1, "1"},
                     {Integer.valueOf(69), "69"},
                     {true, "t"},

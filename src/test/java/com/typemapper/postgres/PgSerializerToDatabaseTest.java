@@ -12,6 +12,7 @@ import java.sql.Types;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -197,6 +198,12 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
                         "(\"This is a complex object using an implicit transformer.\",\"{\"\"list element 1\"\",\"\"list element 2\"\"}\")",
                         Types.OTHER
                     },
+
+                    /* 20 */
+                    {new Date(112, 11, 1, 6, 6, 6), "2012-12-01 06:06:06.000000 +01:00:00", Types.TIMESTAMP},
+
+                    /* 21 */
+                    {new Date(112, 9, 1, 6, 6, 6), "2012-10-01 06:06:06.000000 +02:00:00", Types.TIMESTAMP},
                 });
     }
 
