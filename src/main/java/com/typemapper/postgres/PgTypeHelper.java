@@ -5,9 +5,8 @@ import java.lang.reflect.Field;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
-
-import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +21,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.persistence.Column;
+
+import org.postgresql.core.BaseConnection;
+
+import org.postgresql.jdbc2.PostgresJDBCDriverReusedTimestampUtils;
 
 import org.postgresql.util.PGobject;
 
@@ -446,7 +449,21 @@ public class PgTypeHelper {
         } else if (clazz.isEnum()) {
             sb.append(((Enum<?>) o).name());
         } else if (o instanceof Date) {
-            sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format((Date) o));
+            final Timestamp tmpd = new Timestamp(((Date) o).getTime());
+            if (connection instanceof BaseConnection) {
+                final BaseConnection postgresBaseConnection = (BaseConnection) connection;
+                sb.append(postgresBaseConnection.getTimestampUtils().toString(null, tmpd));
+            } else {
+                if (connection != null) {
+                    throw new IllegalArgumentException("no valid implementation for date for given jdbc driver.");
+                } else {
+
+                    // we do ignore a null connection for testing purpose and use a new TimestampUtils instance here:
+                    final PostgresJDBCDriverReusedTimestampUtils postgresJDBCDriverReusedTimestampUtils =
+                        new PostgresJDBCDriverReusedTimestampUtils();
+                    sb.append(postgresJDBCDriverReusedTimestampUtils.toString(null, tmpd));
+                }
+            }
         } else if (o instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) o;
             sb.append(HStore.serialize(map));
