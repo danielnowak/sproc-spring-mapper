@@ -1,42 +1,42 @@
 package com.typemapper.core.fieldMapper;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import org.apache.log4j.Logger;
 
+import org.postgresql.jdbc2.PostgresJDBCDriverReusedTimestampUtils;
+
 public class DateFieldMapper implements FieldMapper {
 
-	private static final Logger LOG = Logger.getLogger(DateFieldMapper.class);
+    private static final Logger LOG = Logger.getLogger(DateFieldMapper.class);
+    private static PostgresJDBCDriverReusedTimestampUtils postgresJDBCDriverReusedTimestampUtils =
+        new PostgresJDBCDriverReusedTimestampUtils();
 
-	private static final String[] FORMATS = { "yyyy-MM-dd k:m:s",
-			"yyyy-MM-dd k:m", "yyyy-MM-dd" };
+    @Override
+    public Object mapField(final String string, final Class<?> clazz) {
 
-	@Override
-	public Object mapField(String string, Class clazz) {
-		if (string == null) {
-			return null;
-		}
+        if (string == null) {
+            return null;
+        }
 
-		Date result = null;
-		for (final String format : FORMATS) {
-			try {
-				result = new SimpleDateFormat(format).parse(string);
-				if (result != null) {
-					break;
-				}
-			} catch (ParseException e) {
-			}
-		}
-		if (result == null) {
-			LOG.error("Could not parse date: " + string);
-		}
-		if (clazz != null && clazz.equals(java.sql.Date.class) && result != null) {
-			return new java.sql.Date(result.getTime());
-		} else {
-			return result;
-		}
-	}
+        Timestamp date = null;
+        try {
+            date = postgresJDBCDriverReusedTimestampUtils.toTimestamp(null, string);
+        } catch (final SQLException e) {
+            LOG.error("Invalid date/time string: " + string, e);
+        }
 
+        if (date == null) {
+            LOG.error("Could not parse date: " + string);
+            return null;
+        }
+
+        if (clazz != null && clazz.equals(Date.class)) {
+            return new Date(date.getTime());
+        }
+
+        return date;
+    }
 }

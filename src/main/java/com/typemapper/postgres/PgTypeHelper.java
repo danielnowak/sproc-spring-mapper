@@ -5,9 +5,8 @@ import java.lang.reflect.Field;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
-
-import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +21,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.persistence.Column;
+
+import org.postgresql.core.BaseConnection;
+
+import org.postgresql.jdbc2.PostgresJDBCDriverReusedTimestampUtils;
 
 import org.postgresql.util.PGobject;
 
@@ -40,6 +43,9 @@ import com.typemapper.core.fieldMapper.GlobalValueTransformerRegistry;
 public class PgTypeHelper {
 
     private static final Map<String, Integer> pgGenericTypeNameToSQLTypeMap;
+
+    private static final PostgresJDBCDriverReusedTimestampUtils postgresJDBCDriverReusedTimestampUtils =
+        new PostgresJDBCDriverReusedTimestampUtils();
 
     static {
         final Map<String, Integer> m = new HashMap<String, Integer>();
@@ -446,7 +452,17 @@ public class PgTypeHelper {
         } else if (clazz.isEnum()) {
             sb.append(((Enum<?>) o).name());
         } else if (o instanceof Date) {
-            sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format((Date) o));
+            final Timestamp tmpd = new Timestamp(((Date) o).getTime());
+            if (connection instanceof BaseConnection) {
+
+                // if we do have a valid postgresql connection use this one:
+                final BaseConnection postgresBaseConnection = (BaseConnection) connection;
+                sb.append(postgresBaseConnection.getTimestampUtils().toString(null, tmpd));
+            } else {
+
+                // no valid postgresql connection - use that one:
+                sb.append(postgresJDBCDriverReusedTimestampUtils.toString(null, tmpd));
+            }
         } else if (o instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) o;
             sb.append(HStore.serialize(map));
