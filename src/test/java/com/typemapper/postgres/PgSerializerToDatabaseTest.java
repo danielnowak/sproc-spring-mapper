@@ -30,13 +30,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import com.typemapper.AbstractTest;
 
-import com.typemapper.namedresult.results.ClassWithEnum;
-import com.typemapper.namedresult.results.ClassWithPredefinedTransformer;
-import com.typemapper.namedresult.results.ClassWithPrimitives;
-import com.typemapper.namedresult.results.ClassWithPrimitivesAndMap;
-import com.typemapper.namedresult.results.ClassWithSimpleTransformers;
-import com.typemapper.namedresult.results.Enumeration;
-import com.typemapper.namedresult.results.GenderCode;
+import com.typemapper.namedresult.results.*;
 import com.typemapper.namedresult.transformer.Hans;
 
 @RunWith(Parameterized.class)
@@ -204,6 +198,9 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
 
                     /* 21 */
                     {new Date(112, 9, 1, 6, 6, 6), "2012-10-01 06:06:06.000000 +02:00:00", Types.TIMESTAMP},
+
+                    /* 22 */
+                    {PgTypeHelper.asPGobject(new InheritedClassWithPrimitives(1L, "1", 12)), "(1,12,1)", Types.OTHER}
                 });
     }
 
@@ -229,6 +226,8 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
         execute("CREATE TYPE gender_enum_type AS ENUM ('MALE', 'FEMALE');");
         execute(
             "CREATE TYPE tmp.class_with_simple_transformers AS (file_column text, gender_as_code text, gender_as_int integer, gender_as_name gender_enum_type, string_list_with_separtion_char text);");
+
+        execute("CREATE TYPE tmp.inherited_class_with_primitives AS (l bigint, cc text, i int);");
     }
 
     @After
@@ -240,6 +239,7 @@ public class PgSerializerToDatabaseTest extends AbstractTest {
         execute("DROP TYPE tmp.int_with_additional_type;");
         execute("DROP TYPE tmp.int_with_additional_type_array;");
         execute("DROP TYPE tmp.additional_type;");
+        execute("DROP TYPE tmp.inherited_class_with_primitives;");
     }
 
     @Test

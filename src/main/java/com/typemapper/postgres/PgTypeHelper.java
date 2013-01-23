@@ -254,7 +254,7 @@ public class PgTypeHelper {
         List<Object> resultList = null;
         TreeMap<Integer, Object> resultPositionMap = null;
 
-        final Field[] fields = obj.getClass().getDeclaredFields();
+        final Field[] fields = getFields(clazz);
         Map<String, DbTypeField> dbFields = null;
 
         if (connection != null) {
@@ -351,6 +351,22 @@ public class PgTypeHelper {
             return new PgTypeDataHolder(typeName, Collections.unmodifiableCollection(resultPositionMap.values()));
         } else {
             return new PgTypeDataHolder(typeName, Collections.unmodifiableCollection(resultList));
+        }
+    }
+
+    private static Field[] getFields(final Class<?> clazz) {
+        DatabaseType databaseType = clazz.getAnnotation(DatabaseType.class);
+        if (databaseType == null || !databaseType.inheritance()) {
+            return clazz.getDeclaredFields();
+        } else {
+            List<Field> fields = new ArrayList<Field>();
+            Class<?> targetClass = clazz;
+            do {
+                fields.addAll(Arrays.asList(targetClass.getDeclaredFields()));
+                targetClass = targetClass.getSuperclass();
+            } while (targetClass != null && targetClass != Object.class);
+
+            return fields.toArray(new Field[fields.size()]);
         }
     }
 

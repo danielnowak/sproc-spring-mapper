@@ -16,4 +16,9 @@ public @interface DatabaseType {
      */
     String name() default "";
 
+    /**
+     * Flattens hierarchical structure of object and makes parent fields exposed to PgTypeHelper.
+     */
+    boolean inheritance() default false;
+
 }
